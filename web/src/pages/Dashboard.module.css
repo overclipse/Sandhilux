@@ -1,0 +1,133 @@
+.page {
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1440px;
+  animation: fade-in 0.5s ease;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pageTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -0.03em;
+}
+
+.topbarRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.onlinePill {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 16px;
+  border-radius: 9999px;
+  font-variant-numeric: tabular-nums;
+  backdrop-filter: blur(8px);
+}
+
+.pillGreen {
+  background: var(--green-dim);
+  color: var(--green);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.15);
+}
+.pillRed {
+  background: var(--red-dim);
+  color: var(--red);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.15);
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 900px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+}
+
+.tableCard {
+  overflow: hidden;
+  position: relative;
+}
+
+/* ambient glow behind table */
+.tableCard::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 80px;
+  background: radial-gradient(ellipse, rgba(59, 130, 246, 0.04), transparent 70%);
+  pointer-events: none;
+}
+
+.tableHeader, .chartHeader {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.tableWrap { overflow-x: auto; }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table th {
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+  background: rgba(17, 24, 39, 0.5);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
+}
+
+.table td {
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(30, 41, 59, 0.35);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td { border-bottom: none; }
+
+.charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 800px) {
+  .charts { grid-template-columns: 1fr; }
+}

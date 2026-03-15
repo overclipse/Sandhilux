@@ -1,0 +1,10 @@
+.pill {
+  font-size: 10px;
+  font-weight: 500;
+  background: var(--blue-dim);
+  color: var(--blue);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.08);
+}

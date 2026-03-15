@@ -1,0 +1,104 @@
+.page {
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1440px;
+  animation: fade-in 0.5s ease;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pageTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -0.03em;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.filters { display: flex; gap: 6px; }
+
+.filterBtn {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  color: var(--text-3);
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.filterBtn:hover {
+  border-color: var(--border-light);
+  color: var(--text-2);
+  background: rgba(255,255,255,0.04);
+}
+
+.filterActive {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--blue-dim);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.1);
+}
+
+.filterCount {
+  background: rgba(255,255,255,0.06);
+  padding: 1px 6px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.search { max-width: 260px; }
+
+.tableCard {
+  overflow: hidden;
+  position: relative;
+}
+.tableWrap { overflow-x: auto; }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table th {
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+  background: rgba(17, 24, 39, 0.5);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
+}
+
+.table td {
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(30, 41, 59, 0.35);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td { border-bottom: none; }

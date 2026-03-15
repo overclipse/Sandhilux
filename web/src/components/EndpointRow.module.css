@@ -1,0 +1,62 @@
+.row {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.row:hover td {
+  background: rgba(59, 130, 246, 0.03);
+}
+
+/* left accent on hover */
+.row::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, var(--blue), var(--purple));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.row:hover::after { opacity: 0.5; }
+
+.dotCell {
+  width: 48px;
+  text-align: center;
+}
+
+.nameCell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 16px;
+}
+
+.name {
+  font-weight: 600;
+  color: var(--text-1);
+  font-size: 13px;
+  letter-spacing: -0.005em;
+  transition: color 0.15s;
+}
+
+.row:hover .name { color: var(--blue); }
+
+.url {
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+}
+
+.meta {
+  color: var(--text-3);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
