@@ -7,10 +7,13 @@
 package checker
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -49,7 +52,7 @@ type CheckEvent struct {
 type Checker struct {
 	pg         *pgxpool.Pool
 	Events     chan CheckEvent // буферизованный канал; SSE хендлер читает из него
-	failCounts sync.Map       // endpoint_id → int: счётчик подряд идущих падений
+	failCounts sync.Map        // endpoint_id → int: счётчик подряд идущих падений
 }
 
 // New создаёт Checker. pg может быть nil — тогда записи пропускаются.
@@ -293,6 +296,42 @@ func (c *Checker) createAlertIfNone(
 	}
 
 	log.Printf("checker: alert [%s] created for %s: %s", alertType, ep.Name, message)
+	c.sendAlertWebhook(ep, alertType, message)
+}
+
+func (c *Checker) sendAlertWebhook(ep Endpoint, alertType, message string) {
+	webhookURL := os.Getenv("ALERT_WEBHOOK_URL")
+	if webhookURL == "" {
+		return
+	}
+
+	payload := map[string]any{
+		"event":         "alert_created",
+		"type":          alertType,
+		"endpoint_id":   ep.ID,
+		"endpoint_name": ep.Name,
+		"url":           ep.URL,
+		"message":       message,
+		"at":            time.Now().UTC().Format(time.RFC3339),
+	}
+	body, _ := json.Marshal(payload)
+
+	req, err := http.NewRequest(http.MethodPost, webhookURL, bytes.NewReader(body))
+	if err != nil {
+		log.Printf("checker: webhook request build failed: %v", err)
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := (&http.Client{Timeout: 5 * time.Second}).Do(req)
+	if err != nil {
+		log.Printf("checker: webhook send failed: %v", err)
+		return
+	}
+	_ = resp.Body.Close()
+	if resp.StatusCode >= 300 {
+		log.Printf("checker: webhook returned status %d", resp.StatusCode)
+	}
 }
 
 // checkOne проверяет один эндпоинт, сохраняет результат и отправляет событие в SSE канал.

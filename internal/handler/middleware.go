@@ -25,7 +25,7 @@ func Auth(next http.Handler) http.Handler {
 			unauthorized(w)
 			return
 		}
-		claims, err := ParseJWT(tokenStr)
+		claims, err := ParseJWTOfType(tokenStr, "access")
 		if err != nil {
 			unauthorized(w)
 			return

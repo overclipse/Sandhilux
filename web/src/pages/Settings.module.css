@@ -1,301 +1,361 @@
 .page {
-  padding: 28px 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  max-width: 900px;
-  animation: fade-in 0.5s ease;
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 900px;
+    animation: fade-in 0.5s ease;
 }
 
 .pageTitle {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-1);
-  letter-spacing: -0.03em;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-1);
+    letter-spacing: -0.03em;
 }
 
 .section {
-  overflow: hidden;
-  position: relative;
+    overflow: hidden;
+    position: relative;
 }
 
 .sectionTitleRow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 24px;
-  border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
 }
 
 .sectionTitle {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-1);
-  padding: 16px 24px;
-  border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-1);
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
 }
 
 .sectionTitleRow .sectionTitle {
-  padding: 0;
-  border-bottom: none;
+    padding: 0;
+    border-bottom: none;
 }
 
 .sectionBody {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.passwordForm {
+    padding: 20px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.passwordGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.passwordFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.passwordHint {
+    font-size: 12px;
+    color: var(--text-3);
+}
+
+.savedMessage {
+    font-size: 12px;
+    color: var(--green);
+    background: var(--green-dim);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    border-radius: 8px;
+    padding: 8px 10px;
 }
 
 /* Profile section */
 .profileRow {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
 .profileAvatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid rgba(59, 130, 246, 0.2);
-  box-shadow: 0 0 16px rgba(59, 130, 246, 0.1);
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(59, 130, 246, 0.2);
+    box-shadow: 0 0 16px rgba(59, 130, 246, 0.1);
 }
 
 .profileAvatarFallback {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(139, 92, 246, 0.2));
-  color: var(--blue);
-  font-size: 20px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(
+        135deg,
+        rgba(59, 130, 246, 0.25),
+        rgba(139, 92, 246, 0.2)
+    );
+    color: var(--blue);
+    font-size: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .profileInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .profileName {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-1);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-1);
 }
 
 .profileEmail {
-  font-size: 13px;
-  color: var(--text-3);
+    font-size: 13px;
+    color: var(--text-3);
 }
 
 .profileRole {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--blue);
-  margin-top: 2px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--blue);
+    margin-top: 2px;
 }
 
 /* Telegram */
 .telegramStatus {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 12px;
-  border-radius: 9999px;
-  backdrop-filter: blur(8px);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 12px;
+    border-radius: 9999px;
+    backdrop-filter: blur(8px);
 }
 
 .connected {
-  background: var(--green-dim);
-  color: var(--green);
-  box-shadow: 0 0 10px rgba(34, 197, 94, 0.1);
+    background: var(--green-dim);
+    color: var(--green);
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.1);
 }
 .notConfigured {
-  background: rgba(71, 85, 105, 0.15);
-  color: var(--text-3);
+    background: rgba(71, 85, 105, 0.15);
+    color: var(--text-3);
 }
 
 .telegramGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
 }
 
-.telegramActions { display: flex; gap: 10px; }
+.telegramActions {
+    display: flex;
+    gap: 10px;
+}
 
 /* Team table */
-.tableWrap { overflow-x: auto; }
+.tableWrap {
+    overflow-x: auto;
+}
 
 .table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
 }
 
 .table th {
-  text-align: left;
-  padding: 10px 22px;
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-3);
-  background: rgba(17, 24, 39, 0.5);
-  border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(4px);
+    text-align: left;
+    padding: 10px 22px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-3);
+    background: rgba(17, 24, 39, 0.5);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(4px);
 }
 
 .table td {
-  padding: 14px 22px;
-  border-bottom: 1px solid rgba(30, 41, 59, 0.35);
-  vertical-align: middle;
+    padding: 14px 22px;
+    border-bottom: 1px solid rgba(30, 41, 59, 0.35);
+    vertical-align: middle;
 }
 
-.table tbody tr:last-child td { border-bottom: none; }
-.table tbody tr:hover td { background: rgba(59, 130, 246, 0.03); }
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+.table tbody tr:hover td {
+    background: rgba(59, 130, 246, 0.03);
+}
 
 .userCell {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .userCellMeta {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
 }
 
 .userCellName {
-  font-weight: 600;
-  color: var(--text-1);
-  font-size: 13px;
+    font-weight: 600;
+    color: var(--text-1);
+    font-size: 13px;
 }
 
 .avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-  border: 1px solid rgba(255,255,255,0.1);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .avatarFallback {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(139, 92, 246, 0.2));
-  color: var(--blue);
-  font-size: 12px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.1);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(
+        135deg,
+        rgba(59, 130, 246, 0.25),
+        rgba(139, 92, 246, 0.2)
+    );
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.1);
 }
 
 /* ── System / Version ─────────────────────────────── */
 .sysCards {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: 16px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
 }
 
 @media (max-width: 560px) {
-  .sysCards { grid-template-columns: 1fr; }
+    .sysCards {
+        grid-template-columns: 1fr;
+    }
+    .passwordGrid {
+        grid-template-columns: 1fr;
+    }
+    .passwordFooter {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 
 .sysCard {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 14px 16px;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 16px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
 }
 
 .sysCardIcon {
-  font-size: 16px;
-  line-height: 1;
-  opacity: 0.7;
+    font-size: 16px;
+    line-height: 1;
+    opacity: 0.7;
 }
 
 .sysCardLabel {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-3);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-3);
 }
 
 .sysCardValue {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-1);
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-1);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-variant-numeric: tabular-nums;
 }
 
 .versionBadge {
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
-  border: 1px solid rgba(59, 130, 246, 0.25);
-  border-radius: 5px;
-  padding: 2px 8px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-radius: 5px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
 }
 
 .versionCommit {
-  font-family: monospace;
-  font-size: 11px;
-  color: var(--text-3);
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border);
-  padding: 1px 6px;
-  border-radius: 4px;
+    font-family: monospace;
+    font-size: 11px;
+    color: var(--text-3);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 4px;
 }
 
 .runtimeBadge {
-  font-family: monospace;
-  font-size: 12px;
-  color: #34d399;
-  background: rgba(52, 211, 153, 0.1);
-  border: 1px solid rgba(52, 211, 153, 0.2);
-  border-radius: 5px;
-  padding: 2px 8px;
+    font-family: monospace;
+    font-size: 12px;
+    color: #34d399;
+    background: rgba(52, 211, 153, 0.1);
+    border: 1px solid rgba(52, 211, 153, 0.2);
+    border-radius: 5px;
+    padding: 2px 8px;
 }
 
 .versionHint {
-  font-size: 12px;
-  color: var(--text-3);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding-top: 4px;
+    font-size: 12px;
+    color: var(--text-3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding-top: 4px;
 }
 
 .updateCmd {
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: 3px 10px;
-  font-size: 12px;
-  font-family: monospace;
-  color: var(--text-1);
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-family: monospace;
+    color: var(--text-1);
 }

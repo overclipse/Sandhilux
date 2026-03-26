@@ -20,7 +20,7 @@ Check your HTTP endpoints every minute. Get notified on Telegram the moment some
 
 - Monitors HTTP endpoints on a configurable schedule (per-endpoint interval)
 - Tracks **uptime**, **P50 / P95 latency**, and **incident history**
-- Fires **Telegram alerts** when endpoints go down, become slow, or return wrong status codes
+- Fires **Telegram/Webhook alerts** when endpoints go down, become slow, or return wrong status codes
 - Sends **recovery notifications** when an endpoint comes back online
 - Streams live check results to the dashboard via **Server-Sent Events**
 - Supports multiple users with **admin / viewer roles** and self-registration
@@ -116,6 +116,7 @@ All routes live under `/api`. Protected routes require `Authorization: Bearer <t
 | `POST` | `/api/auth/setup` | — | Create the first admin account |
 | `POST` | `/api/auth/login` | — | Login → JWT |
 | `POST` | `/api/auth/register` | — | Register a viewer account |
+| `POST` | `/api/auth/refresh` | — | Exchange refresh token for a new token pair |
 | `POST` | `/api/auth/logout` | — | Logout |
 | `GET` | `/api/me` | user | Current user profile |
 

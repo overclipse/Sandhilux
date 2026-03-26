@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -15,6 +16,7 @@ import (
 // JWTClaims are the claims embedded in our access token.
 type JWTClaims struct {
 	jwt.RegisteredClaims
+	TokenType string `json:"token_type"`
 	UserID    string `json:"user_id"`
 	Email     string `json:"email"`
 	Role      string `json:"role"`
@@ -30,14 +32,32 @@ func jwtSecret() []byte {
 	return []byte(s)
 }
 
-// IssueJWT creates a signed JWT for the given user.
-func IssueJWT(userID, email, role, name, avatarURL string) (string, error) {
+func accessTTL() time.Duration {
+	if v := os.Getenv("JWT_ACCESS_TTL_MINUTES"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			return time.Duration(n) * time.Minute
+		}
+	}
+	return 15 * time.Minute
+}
+
+func refreshTTL() time.Duration {
+	if v := os.Getenv("JWT_REFRESH_TTL_HOURS"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			return time.Duration(n) * time.Hour
+		}
+	}
+	return 7 * 24 * time.Hour
+}
+
+func issueToken(userID, email, role, name, avatarURL, tokenType string, ttl time.Duration) (string, error) {
 	claims := JWTClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(ttl)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			Issuer:    "sandhilux",
 		},
+		TokenType: tokenType,
 		UserID:    userID,
 		Email:     email,
 		Role:      role,
@@ -46,6 +66,15 @@ func IssueJWT(userID, email, role, name, avatarURL string) (string, error) {
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtSecret())
+}
+
+// IssueJWT creates a signed access JWT for the given user.
+func IssueJWT(userID, email, role, name, avatarURL string) (string, error) {
+	return issueToken(userID, email, role, name, avatarURL, "access", accessTTL())
+}
+
+func IssueRefreshJWT(userID, email, role, name, avatarURL string) (string, error) {
+	return issueToken(userID, email, role, name, avatarURL, "refresh", refreshTTL())
 }
 
 // ParseJWT validates and parses a JWT string.
@@ -64,6 +93,32 @@ func ParseJWT(tokenStr string) (*JWTClaims, error) {
 		return nil, fmt.Errorf("invalid token")
 	}
 	return claims, nil
+}
+
+func ParseJWTOfType(tokenStr, expectedType string) (*JWTClaims, error) {
+	claims, err := ParseJWT(tokenStr)
+	if err != nil {
+		return nil, err
+	}
+	if claims.TokenType == "" {
+		claims.TokenType = "access"
+	}
+	if claims.TokenType != expectedType {
+		return nil, fmt.Errorf("invalid token type")
+	}
+	return claims, nil
+}
+
+func issueTokenPair(userID, email, role, name, avatarURL string) (string, string, error) {
+	access, err := IssueJWT(userID, email, role, name, avatarURL)
+	if err != nil {
+		return "", "", err
+	}
+	refresh, err := IssueRefreshJWT(userID, email, role, name, avatarURL)
+	if err != nil {
+		return "", "", err
+	}
+	return access, refresh, nil
 }
 
 // AuthStatus godoc
@@ -134,12 +189,12 @@ func (h *Handler) Setup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := IssueJWT(userID, body.Email, "admin", body.Name, "")
+	token, refreshToken, err := issueTokenPair(userID, body.Email, "admin", body.Name, "")
 	if err != nil {
 		internalError(w, fmt.Errorf("issue JWT: %w", err))
 		return
 	}
-	ok(w, map[string]string{"token": token})
+	ok(w, map[string]string{"token": token, "access_token": token, "refresh_token": refreshToken})
 }
 
 // Login godoc
@@ -180,12 +235,12 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := IssueJWT(userID, body.Email, role, name, avatarURL)
+	token, refreshToken, err := issueTokenPair(userID, body.Email, role, name, avatarURL)
 	if err != nil {
 		internalError(w, fmt.Errorf("issue JWT: %w", err))
 		return
 	}
-	ok(w, map[string]string{"token": token})
+	ok(w, map[string]string{"token": token, "access_token": token, "refresh_token": refreshToken})
 }
 
 // Me godoc
@@ -197,7 +252,7 @@ func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 		unauthorized(w)
 		return
 	}
-	claims, err := ParseJWT(authHeader[7:])
+	claims, err := ParseJWTOfType(authHeader[7:], "access")
 	if err != nil {
 		unauthorized(w)
 		return
@@ -264,12 +319,12 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := IssueJWT(userID, body.Username, "viewer", body.Name, "")
+	token, refreshToken, err := issueTokenPair(userID, body.Username, "viewer", body.Name, "")
 	if err != nil {
 		internalError(w, fmt.Errorf("issue JWT: %w", err))
 		return
 	}
-	ok(w, map[string]string{"token": token})
+	ok(w, map[string]string{"token": token, "access_token": token, "refresh_token": refreshToken})
 }
 
 // Logout godoc
@@ -277,4 +332,34 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 // POST /api/auth/logout
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	noContent(w)
+}
+
+// Refresh godoc
+//
+// POST /api/auth/refresh
+func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, maxBodySize)).Decode(&body); err != nil {
+		badRequest(w, "invalid JSON")
+		return
+	}
+	if body.RefreshToken == "" {
+		badRequest(w, "refresh_token is required")
+		return
+	}
+
+	claims, err := ParseJWTOfType(body.RefreshToken, "refresh")
+	if err != nil {
+		unauthorized(w)
+		return
+	}
+
+	access, refresh, err := issueTokenPair(claims.UserID, claims.Email, claims.Role, claims.Name, claims.AvatarURL)
+	if err != nil {
+		internalError(w, fmt.Errorf("issue JWT: %w", err))
+		return
+	}
+	ok(w, map[string]string{"token": access, "access_token": access, "refresh_token": refresh})
 }

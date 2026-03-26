@@ -34,6 +34,7 @@ func New(h *handler.Handler) http.Handler {
 			r.Post("/login", h.Login)
 			r.Post("/register", h.Register)
 			r.Post("/setup", h.Setup)
+			r.Post("/refresh", h.Refresh)
 			r.Post("/logout", h.Logout)
 		})
 
@@ -43,6 +44,7 @@ func New(h *handler.Handler) http.Handler {
 		// Protected routes — require valid JWT
 		r.Group(func(r chi.Router) {
 			r.Use(handler.Auth)
+			r.Use(middleware.RateLimit(300, 1*time.Minute))
 
 			// SSE stream — requires auth
 			r.Get("/events", h.Events)
@@ -59,6 +61,7 @@ func New(h *handler.Handler) http.Handler {
 					r.Put("/", h.UpdateEndpoint)
 					r.Delete("/", h.DeleteEndpoint)
 					r.Patch("/toggle", h.ToggleEndpoint)
+					r.Post("/duplicate", h.DuplicateEndpoint)
 
 					r.Post("/check", h.CheckEndpointNow)
 
@@ -89,6 +92,7 @@ func New(h *handler.Handler) http.Handler {
 
 			// Version info — any authenticated user
 			r.Get("/version", h.GetVersion)
+			r.Put("/settings/password", h.ChangePassword)
 
 			// Settings — admin only
 			r.Route("/settings", func(r chi.Router) {
@@ -98,7 +102,7 @@ func New(h *handler.Handler) http.Handler {
 				r.Put("/users/{id}/role", h.UpdateUserRole)
 				r.Delete("/users/{id}", h.RemoveUser)
 
-				})
+			})
 		})
 	})
 

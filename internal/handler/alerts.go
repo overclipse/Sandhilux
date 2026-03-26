@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -31,6 +32,14 @@ func (h *Handler) ListAlerts(w http.ResponseWriter, r *http.Request) {
 	status := q.Get("status")
 	alertType := q.Get("type")
 	endpointID := q.Get("endpoint_id")
+	limit, _ := strconv.Atoi(q.Get("limit"))
+	offset, _ := strconv.Atoi(q.Get("offset"))
+	if limit <= 0 || limit > 200 {
+		limit = 50
+	}
+	if offset < 0 {
+		offset = 0
+	}
 
 	rows, err := h.PG.Query(r.Context(), `
 		SELECT id::text, endpoint_id::text, endpoint_name, type, status,
@@ -40,8 +49,8 @@ func (h *Handler) ListAlerts(w http.ResponseWriter, r *http.Request) {
 		  AND ($2 = '' OR type   = $2)
 		  AND ($3 = '' OR endpoint_id = $3::uuid)
 		ORDER BY created_at DESC
-		LIMIT 200
-	`, status, alertType, endpointID)
+		LIMIT $4 OFFSET $5
+	`, status, alertType, endpointID, limit, offset)
 	if err != nil {
 		internalError(w, err)
 		return

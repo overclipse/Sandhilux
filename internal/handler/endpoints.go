@@ -278,6 +278,45 @@ func (h *Handler) DeleteEndpoint(w http.ResponseWriter, r *http.Request) {
 	noContent(w)
 }
 
+// DuplicateEndpoint — POST /api/endpoints/{id}/duplicate
+func (h *Handler) DuplicateEndpoint(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if h.PG == nil {
+		internalError(w, errNoDB)
+		return
+	}
+
+	claims := claimsFromCtx(r.Context())
+	var userID *string
+	if claims != nil {
+		if _, err := uuid.Parse(claims.UserID); err == nil {
+			userID = &claims.UserID
+		}
+	}
+
+	row := h.PG.QueryRow(r.Context(), `
+		INSERT INTO endpoints (
+			user_id, name, url, method, headers, body, check_interval, timeout,
+			expected_status, latency_threshold, follow_redirects, enabled
+		)
+		SELECT
+			$2,
+			name || ' (copy)',
+			url, method, headers, body, check_interval, timeout,
+			expected_status, latency_threshold, follow_redirects, enabled
+		FROM endpoints
+		WHERE id = $1
+		RETURNING `+endpointSelectCols,
+		id, userID,
+	)
+	ep, err := scanEndpoint(row)
+	if err != nil {
+		notFound(w)
+		return
+	}
+	created(w, ep)
+}
+
 // CheckEndpointNow — POST /api/endpoints/{id}/check
 func (h *Handler) CheckEndpointNow(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")

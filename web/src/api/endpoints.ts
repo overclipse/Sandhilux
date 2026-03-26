@@ -1,34 +1,46 @@
-import client from './client'
-import type { Endpoint, EndpointCreate, AlertRule, AlertRuleCreate, CheckRecord, EndpointStats } from '../types/api'
+import client from "./client";
+import type {
+  Endpoint,
+  EndpointCreate,
+  AlertRule,
+  AlertRuleCreate,
+  CheckRecord,
+  EndpointStats,
+} from "../types/api";
 
 // headers in the form is a raw JSON string; the API expects a plain object.
 function serializeEndpoint(body: EndpointCreate | Partial<EndpointCreate>) {
-  let headers: Record<string, string> = {}
+  let headers: Record<string, string> = {};
   if (body.headers && body.headers.trim()) {
     try {
-      headers = JSON.parse(body.headers)
+      headers = JSON.parse(body.headers);
     } catch {
-      headers = {}
+      headers = {};
     }
   }
-  return { ...body, headers }
+  return { ...body, headers };
 }
 
 export const endpointsApi = {
-  list: () =>
-    client.get<Endpoint[]>('/api/endpoints').then((r) => r.data),
+  list: () => client.get<Endpoint[]>("/api/endpoints").then((r) => r.data),
 
   get: (id: string) =>
     client.get<Endpoint>(`/api/endpoints/${id}`).then((r) => r.data),
 
   create: (body: EndpointCreate) =>
-    client.post<Endpoint>('/api/endpoints', serializeEndpoint(body)).then((r) => r.data),
+    client
+      .post<Endpoint>("/api/endpoints", serializeEndpoint(body))
+      .then((r) => r.data),
 
   update: (id: string, body: Partial<EndpointCreate>) =>
-    client.put<Endpoint>(`/api/endpoints/${id}`, serializeEndpoint(body)).then((r) => r.data),
+    client
+      .put<Endpoint>(`/api/endpoints/${id}`, serializeEndpoint(body))
+      .then((r) => r.data),
 
-  delete: (id: string) =>
-    client.delete(`/api/endpoints/${id}`),
+  delete: (id: string) => client.delete(`/api/endpoints/${id}`),
+
+  duplicate: (id: string) =>
+    client.post<Endpoint>(`/api/endpoints/${id}/duplicate`).then((r) => r.data),
 
   toggle: (id: string) =>
     client.patch<Endpoint>(`/api/endpoints/${id}/toggle`).then((r) => r.data),
@@ -41,7 +53,9 @@ export const endpointsApi = {
     client.get<AlertRule[]>(`/api/endpoints/${id}/rules`).then((r) => r.data),
 
   createRule: (id: string, body: AlertRuleCreate) =>
-    client.post<AlertRule>(`/api/endpoints/${id}/rules`, body).then((r) => r.data),
+    client
+      .post<AlertRule>(`/api/endpoints/${id}/rules`, body)
+      .then((r) => r.data),
 
   deleteRule: (endpointId: string, ruleId: string) =>
     client.delete(`/api/endpoints/${endpointId}/rules/${ruleId}`),
@@ -49,10 +63,12 @@ export const endpointsApi = {
   // Check history
   getHistory: (id: string, limit = 50, offset = 0) =>
     client
-      .get<CheckRecord[]>(`/api/endpoints/${id}/history`, { params: { limit, offset } })
+      .get<
+        CheckRecord[]
+      >(`/api/endpoints/${id}/history`, { params: { limit, offset } })
       .then((r) => r.data),
 
   // Stats
   getStats: (id: string) =>
     client.get<EndpointStats>(`/api/endpoints/${id}/stats`).then((r) => r.data),
-}
+};

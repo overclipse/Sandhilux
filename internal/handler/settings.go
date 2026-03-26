@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type updateRoleRequest struct {
@@ -93,6 +95,56 @@ func (h *Handler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	}
 	_, err := h.PG.Exec(r.Context(), `DELETE FROM users WHERE id = $1`, id)
 	if err != nil {
+		internalError(w, err)
+		return
+	}
+	noContent(w)
+}
+
+// ChangePassword — PUT /api/settings/password
+func (h *Handler) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	claims := claimsFromCtx(r.Context())
+	if claims == nil {
+		unauthorized(w)
+		return
+	}
+	var req struct {
+		CurrentPassword string `json:"current_password"`
+		NewPassword     string `json:"new_password"`
+	}
+	if err := decodeJSON(r, &req); err != nil {
+		badRequest(w, "invalid request body")
+		return
+	}
+	if req.CurrentPassword == "" || req.NewPassword == "" {
+		badRequest(w, "current_password and new_password are required")
+		return
+	}
+	if len(req.NewPassword) < 8 {
+		badRequest(w, "new_password must be at least 8 characters")
+		return
+	}
+	if h.PG == nil {
+		internalError(w, errNoDB)
+		return
+	}
+
+	var currentHash string
+	if err := h.PG.QueryRow(r.Context(), `SELECT password_hash FROM users WHERE id = $1`, claims.UserID).Scan(&currentHash); err != nil {
+		unauthorized(w)
+		return
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(currentHash), []byte(req.CurrentPassword)); err != nil {
+		unauthorized(w)
+		return
+	}
+	newHash, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		internalError(w, fmt.Errorf("hash password: %w", err))
+		return
+	}
+
+	if _, err := h.PG.Exec(r.Context(), `UPDATE users SET password_hash = $2 WHERE id = $1`, claims.UserID, string(newHash)); err != nil {
 		internalError(w, err)
 		return
 	}
