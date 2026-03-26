@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -92,58 +91,5 @@ func TestRemoveUser_SelfDeletion_Returns400(t *testing.T) {
 	}
 }
 
-// ── GetTelegram ────────────────────────────────────────────────────────────
-
-func TestGetTelegram_NilDB_ReturnsDefault(t *testing.T) {
-	h := newNilHandler()
-	req := httptest.NewRequest(http.MethodGet, "/api/settings/telegram", nil)
-	w := httptest.NewRecorder()
-	h.GetTelegram(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("want 200, got %d", w.Code)
-	}
-}
-
-// ── SaveTelegram ───────────────────────────────────────────────────────────
-
-func TestSaveTelegram_InvalidJSON_Returns400(t *testing.T) {
-	h := newNilHandler()
-	req := httptest.NewRequest(http.MethodPut, "/api/settings/telegram",
-		strings.NewReader("{not valid json"))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-	h.SaveTelegram(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("want 400, got %d", w.Code)
-	}
-}
-
-func TestSaveTelegram_NilDB_Returns500(t *testing.T) {
-	h := newNilHandler()
-	req := httptest.NewRequest(http.MethodPut, "/api/settings/telegram", nil)
-	req = withBody(req, `{"bot_token":"123:abc","chat_id":"-100123"}`)
-	w := httptest.NewRecorder()
-	h.SaveTelegram(w, req)
-
-	if w.Code != http.StatusInternalServerError {
-		t.Errorf("want 500, got %d", w.Code)
-	}
-}
-
-// ── TestTelegram ───────────────────────────────────────────────────────────
-
-func TestTestTelegram_NilDB_Returns500(t *testing.T) {
-	h := newNilHandler()
-	req := httptest.NewRequest(http.MethodPost, "/api/settings/telegram/test", nil)
-	w := httptest.NewRecorder()
-	h.TestTelegram(w, req)
-
-	if w.Code != http.StatusInternalServerError {
-		t.Errorf("want 500, got %d", w.Code)
-	}
-}
-
-// ensure io is used (badBodyReader helper for potential reuse)
-var _ io.Reader = strings.NewReader("")
+// ensure strings is used
+var _ = strings.NewReader("")

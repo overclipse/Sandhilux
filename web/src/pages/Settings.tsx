@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { settingsApi } from '../api/settings'
 import { useAppStore } from '../store'
@@ -16,11 +15,6 @@ export function Settings() {
   const t = useT()
   const user = useAppStore((s) => s.user)
 
-  // Telegram form
-  const [botToken, setBotToken] = useState('')
-  const [chatId, setChatId] = useState('')
-  const [telegramMsg, setTelegramMsg] = useState('')
-
   const { data: version } = useQuery({
     queryKey: ['version'],
     queryFn: () => settingsApi.getVersion(),
@@ -30,30 +24,6 @@ export function Settings() {
   const { data: users = [], refetch: refetchUsers, error: usersError } = useQuery({
     queryKey: ['users'],
     queryFn: () => settingsApi.getUsers(),
-  })
-
-  const { data: telegram, refetch: refetchTelegram, error: telegramError } = useQuery({
-    queryKey: ['telegram'],
-    queryFn: () => settingsApi.getTelegram(),
-  })
-
-  // Pre-fill Telegram form when data loads
-  useEffect(() => {
-    if (telegram?.configured) {
-      setBotToken(telegram.bot_token)
-      setChatId(telegram.chat_id)
-    }
-  }, [telegram])
-
-  const saveTelegramMutation = useMutation({
-    mutationFn: () => settingsApi.saveTelegram(botToken, chatId),
-    onSuccess: () => { setTelegramMsg(t('settings.saved')); refetchTelegram() },
-  })
-
-  const testTelegramMutation = useMutation({
-    mutationFn: () => settingsApi.testTelegram(),
-    onSuccess: () => setTelegramMsg(t('settings.testSent')),
-    onError: () => setTelegramMsg(t('settings.testFailed')),
   })
 
   const updateRoleMutation = useMutation({
@@ -71,10 +41,10 @@ export function Settings() {
     <div className={styles.page}>
       <h1 className={styles.pageTitle}>{t('settings.title')}</h1>
 
-      {(usersError || telegramError) && (
+      {usersError && (
         <ErrorBanner
-          message={getErrorMessage(usersError || telegramError)}
-          onRetry={() => { refetchUsers(); refetchTelegram() }}
+          message={getErrorMessage(usersError)}
+          onRetry={() => refetchUsers()}
         />
       )}
 
@@ -95,37 +65,6 @@ export function Settings() {
               <span className={styles.profileEmail}>{user?.email}</span>
               <span className={styles.profileRole}>{user?.role}</span>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Telegram */}
-      <section className={`card ${styles.section}`}>
-        <div className={styles.sectionTitleRow}>
-          <h2 className={styles.sectionTitle}>{t('settings.telegram')}</h2>
-          <span className={`${styles.telegramStatus} ${telegram?.configured ? styles.connected : styles.notConfigured}`}>
-            {telegram?.configured ? '● ' + t('settings.connected') : '○ ' + t('settings.notConfigured')}
-          </span>
-        </div>
-        <div className={styles.sectionBody}>
-          <div className={styles.telegramGrid}>
-            <div className="form-group">
-              <label className="form-label">{t('settings.botToken')}</label>
-              <input className="form-input" type="password" value={botToken} onChange={(e) => setBotToken(e.target.value)} placeholder="123456:ABC-DEF…" />
-            </div>
-            <div className="form-group">
-              <label className="form-label">{t('settings.chatId')}</label>
-              <input className="form-input" value={chatId} onChange={(e) => setChatId(e.target.value)} placeholder="-1001234567890" />
-            </div>
-          </div>
-          {telegramMsg && <p style={{ fontSize: 13, color: 'var(--green)' }}>{telegramMsg}</p>}
-          <div className={styles.telegramActions}>
-            <button className="btn btn-primary btn-sm" onClick={() => saveTelegramMutation.mutate()} disabled={saveTelegramMutation.isPending}>
-              {saveTelegramMutation.isPending ? <span className="spinner" /> : t('settings.save')}
-            </button>
-            <button className="btn btn-ghost btn-sm" onClick={() => testTelegramMutation.mutate()} disabled={testTelegramMutation.isPending || !telegram?.configured}>
-              {t('settings.sendTest')}
-            </button>
           </div>
         </div>
       </section>
@@ -191,31 +130,33 @@ export function Settings() {
       <section className={`card ${styles.section}`}>
         <h2 className={styles.sectionTitle}>{t('settings.system')}</h2>
         <div className={styles.sectionBody}>
-          {version ? (
-            <div className={styles.versionGrid}>
-              <div className={styles.versionRow}>
-                <span className={styles.versionLabel}>{t('settings.version')}</span>
-                <span className={styles.versionValue}>
-                  <span className={styles.versionBadge}>v{version.version}</span>
-                  {version.commit && <span className={styles.versionCommit}>{version.commit}</span>}
-                </span>
-              </div>
-              <div className={styles.versionRow}>
-                <span className={styles.versionLabel}>{t('settings.uptime')}</span>
-                <span className={styles.versionValue}>{version.uptime}</span>
-              </div>
-              <div className={styles.versionRow}>
-                <span className={styles.versionLabel}>{t('settings.runtime')}</span>
-                <span className={styles.versionValue}>{version.go_version}</span>
-              </div>
-              <div className={styles.versionRow}>
-                <span className={styles.versionLabel}>{t('settings.buildTime')}</span>
-                <span className={styles.versionValue}>{fmtDate(version.build_time)}</span>
-              </div>
+          <div className={styles.sysCards}>
+            <div className={styles.sysCard}>
+              <span className={styles.sysCardIcon}>⬡</span>
+              <span className={styles.sysCardLabel}>{t('settings.version')}</span>
+              <span className={styles.sysCardValue}>
+                <span className={styles.versionBadge}>v{version?.version ?? '…'}</span>
+                {version?.commit && <span className={styles.versionCommit}>{version.commit}</span>}
+              </span>
             </div>
-          ) : (
-            <span className={styles.versionValue} style={{ color: 'var(--text-3)' }}>—</span>
-          )}
+            <div className={styles.sysCard}>
+              <span className={styles.sysCardIcon}>⏱</span>
+              <span className={styles.sysCardLabel}>{t('settings.uptime')}</span>
+              <span className={styles.sysCardValue}>{version?.uptime ?? '…'}</span>
+            </div>
+            <div className={styles.sysCard}>
+              <span className={styles.sysCardIcon}>⚙</span>
+              <span className={styles.sysCardLabel}>{t('settings.runtime')}</span>
+              <span className={styles.sysCardValue}>
+                <span className={styles.runtimeBadge}>{version?.go_version ?? '…'}</span>
+              </span>
+            </div>
+            <div className={styles.sysCard}>
+              <span className={styles.sysCardIcon}>📦</span>
+              <span className={styles.sysCardLabel}>{t('settings.buildTime')}</span>
+              <span className={styles.sysCardValue}>{version ? fmtDate(version.build_time) : '…'}</span>
+            </div>
+          </div>
           <div className={styles.versionHint}>
             {t('settings.updateHint')}
             <code className={styles.updateCmd}>bash scripts/deploy.sh</code>

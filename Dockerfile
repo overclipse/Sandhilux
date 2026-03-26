@@ -10,7 +10,7 @@ COPY web/ ./
 RUN npm run build
 
 # ── Stage 2: Build Go backend ──────────────────────────────────────────────────
-FROM golang:1.24-alpine AS backend
+FROM golang:1.26.1-alpine AS backend
 
 ENV GOTOOLCHAIN=auto
 
@@ -20,12 +20,16 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /sandhilux ./cmd/api
+RUN VERSION=$(cat VERSION 2>/dev/null | tr -d '[:space:]' || echo "dev") && \
+    COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "") && \
+    CGO_ENABLED=0 GOOS=linux go build -trimpath \
+      -ldflags="-s -w -X overclipse/Sandhilux/internal/handler.BuildVersion=${VERSION} -X overclipse/Sandhilux/internal/handler.BuildCommit=${COMMIT}" \
+      -o /sandhilux ./cmd/api
 
 # ── Stage 3: Runtime ───────────────────────────────────────────────────────────
 FROM alpine:3.21
 
-RUN apk add --no-cache ca-certificates tzdata
+RUN apk add --no-cache ca-certificates tzdata git
 
 WORKDIR /app
 

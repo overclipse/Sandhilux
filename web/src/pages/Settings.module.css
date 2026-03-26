@@ -204,50 +204,80 @@
 }
 
 /* ── System / Version ─────────────────────────────── */
-.versionGrid {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.sysCards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
   margin-bottom: 16px;
 }
 
-.versionRow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 13px;
+@media (max-width: 560px) {
+  .sysCards { grid-template-columns: 1fr; }
 }
 
-.versionLabel {
-  width: 110px;
-  flex-shrink: 0;
+.sysCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.sysCardIcon {
+  font-size: 16px;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.sysCardLabel {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: var(--text-3);
 }
 
-.versionValue {
+.sysCardValue {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: var(--text-1);
+  gap: 7px;
   font-variant-numeric: tabular-nums;
 }
 
 .versionBadge {
-  background: var(--accent-alpha);
-  color: var(--accent);
-  border-radius: 4px;
-  padding: 1px 7px;
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 5px;
+  padding: 2px 8px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .versionCommit {
   font-family: monospace;
   font-size: 11px;
   color: var(--text-3);
-  background: var(--bg-2);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
   padding: 1px 6px;
-  border-radius: 3px;
+  border-radius: 4px;
+}
+
+.runtimeBadge {
+  font-family: monospace;
+  font-size: 12px;
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  border-radius: 5px;
+  padding: 2px 8px;
 }
 
 .versionHint {
@@ -257,13 +287,14 @@
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  padding-top: 4px;
 }
 
 .updateCmd {
   background: var(--bg-2);
   border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 2px 8px;
+  border-radius: 5px;
+  padding: 3px 10px;
   font-size: 12px;
   font-family: monospace;
   color: var(--text-1);

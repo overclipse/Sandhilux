@@ -9,7 +9,6 @@ import {
   MOCK_HISTORY,
   MOCK_ALERTS,
   MOCK_USERS,
-  MOCK_TELEGRAM,
   MOCK_DASHBOARD_LATENCY,
   MOCK_DASHBOARD_UPTIME,
 } from './data'
@@ -85,8 +84,6 @@ export const mockAdapter: AxiosAdapter = (config) => {
 
   // Settings
   if (url.includes('/api/settings/users') && config.method === 'get') return ok(MOCK_USERS)
-  if (url.includes('/api/settings/telegram') && config.method === 'get') return ok(MOCK_TELEGRAM)
-  if (url.includes('/api/settings/telegram/test')) return ok({ ok: true })
   if (url.includes('/api/settings')) return ok({ ok: true })
 
   // SSE events — не перехватываем (EventSource не через axios)

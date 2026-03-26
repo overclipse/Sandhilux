@@ -33,7 +33,6 @@ type alertRuleCreateRequest struct {
 	Type             string `json:"type"`
 	Threshold        *int   `json:"threshold,omitempty"`
 	ConsecutiveFails *int   `json:"consecutive_fails,omitempty"`
-	NotifyTelegram   bool   `json:"notify_telegram"`
 }
 
 type endpointRow struct {
@@ -321,7 +320,7 @@ func (h *Handler) ListRules(w http.ResponseWriter, r *http.Request) {
 	}
 	rows, err := h.PG.Query(r.Context(), `
 		SELECT id::text, endpoint_id::text, type, threshold, consecutive_fails,
-		       notify_telegram, created_at
+		       created_at
 		FROM alert_rules WHERE endpoint_id = $1 ORDER BY created_at
 	`, endpointID)
 	if err != nil {
@@ -336,7 +335,6 @@ func (h *Handler) ListRules(w http.ResponseWriter, r *http.Request) {
 		Type             string `json:"type"`
 		Threshold        *int   `json:"threshold,omitempty"`
 		ConsecutiveFails *int   `json:"consecutive_fails,omitempty"`
-		NotifyTelegram   bool   `json:"notify_telegram"`
 		CreatedAt        string `json:"created_at"`
 	}
 	result := []ruleRow{}
@@ -344,7 +342,7 @@ func (h *Handler) ListRules(w http.ResponseWriter, r *http.Request) {
 		var rule ruleRow
 		var createdAt time.Time
 		if err := rows.Scan(&rule.ID, &rule.EndpointID, &rule.Type,
-			&rule.Threshold, &rule.ConsecutiveFails, &rule.NotifyTelegram, &createdAt); err != nil {
+			&rule.Threshold, &rule.ConsecutiveFails, &createdAt); err != nil {
 			internalError(w, err)
 			return
 		}
@@ -374,10 +372,10 @@ func (h *Handler) CreateRule(w http.ResponseWriter, r *http.Request) {
 	var id string
 	var createdAt time.Time
 	err := h.PG.QueryRow(r.Context(), `
-		INSERT INTO alert_rules (endpoint_id, type, threshold, consecutive_fails, notify_telegram)
-		VALUES ($1, $2, $3, $4, $5)
+		INSERT INTO alert_rules (endpoint_id, type, threshold, consecutive_fails)
+		VALUES ($1, $2, $3, $4)
 		RETURNING id::text, created_at
-	`, endpointID, req.Type, req.Threshold, req.ConsecutiveFails, req.NotifyTelegram,
+	`, endpointID, req.Type, req.Threshold, req.ConsecutiveFails,
 	).Scan(&id, &createdAt)
 	if err != nil {
 		internalError(w, err)
@@ -389,7 +387,6 @@ func (h *Handler) CreateRule(w http.ResponseWriter, r *http.Request) {
 		"type":              req.Type,
 		"threshold":         req.Threshold,
 		"consecutive_fails": req.ConsecutiveFails,
-		"notify_telegram":   req.NotifyTelegram,
 		"created_at":        createdAt.UTC().Format(time.RFC3339),
 	})
 }

@@ -1,9 +1,6 @@
 package handler
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -12,11 +9,6 @@ import (
 
 type updateRoleRequest struct {
 	Role string `json:"role"`
-}
-
-type telegramSettingsRequest struct {
-	BotToken string `json:"bot_token"`
-	ChatID   string `json:"chat_id"`
 }
 
 // ListUsers — GET /api/settings/users
@@ -105,102 +97,4 @@ func (h *Handler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	noContent(w)
-}
-
-// GetTelegram — GET /api/settings/telegram
-func (h *Handler) GetTelegram(w http.ResponseWriter, r *http.Request) {
-	if h.PG == nil {
-		ok(w, map[string]any{"bot_token": "", "chat_id": "", "configured": false})
-		return
-	}
-
-	var botToken, chatID string
-	err := h.PG.QueryRow(r.Context(),
-		`SELECT bot_token, chat_id FROM telegram_settings WHERE id = 1`,
-	).Scan(&botToken, &chatID)
-	if err != nil {
-		internalError(w, err)
-		return
-	}
-	maskedToken := ""
-	if len(botToken) > 8 {
-		maskedToken = botToken[:4] + "****" + botToken[len(botToken)-4:]
-	} else if botToken != "" {
-		maskedToken = "****"
-	}
-	ok(w, map[string]any{
-		"bot_token":  maskedToken,
-		"chat_id":    chatID,
-		"configured": botToken != "" && chatID != "",
-	})
-}
-
-// SaveTelegram — PUT /api/settings/telegram
-func (h *Handler) SaveTelegram(w http.ResponseWriter, r *http.Request) {
-	var req telegramSettingsRequest
-	if err := decodeJSON(r, &req); err != nil {
-		badRequest(w, "invalid request body")
-		return
-	}
-	if h.PG == nil {
-		internalError(w, errNoDB)
-		return
-	}
-
-	_, err := h.PG.Exec(r.Context(), `
-		UPDATE telegram_settings SET bot_token = $1, chat_id = $2, updated_at = now()
-		WHERE id = 1
-	`, req.BotToken, req.ChatID)
-	if err != nil {
-		internalError(w, err)
-		return
-	}
-	ok(w, map[string]any{
-		"bot_token":  req.BotToken,
-		"chat_id":    req.ChatID,
-		"configured": req.BotToken != "" && req.ChatID != "",
-	})
-}
-
-// TestTelegram — POST /api/settings/telegram/test
-func (h *Handler) TestTelegram(w http.ResponseWriter, r *http.Request) {
-	if h.PG == nil {
-		internalError(w, errNoDB)
-		return
-	}
-
-	var botToken, chatID string
-	err := h.PG.QueryRow(r.Context(),
-		`SELECT bot_token, chat_id FROM telegram_settings WHERE id = 1`,
-	).Scan(&botToken, &chatID)
-	if err != nil || botToken == "" || chatID == "" {
-		badRequest(w, "telegram not configured")
-		return
-	}
-
-	body, _ := json.Marshal(map[string]string{
-		"chat_id": chatID,
-		"text":    "Sandhilux: test message",
-	})
-	resp, err := http.Post(
-		fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", botToken),
-		"application/json",
-		bytes.NewReader(body),
-	)
-	if err != nil {
-		internalError(w, fmt.Errorf("telegram request failed: %w", err))
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		var tgErr map[string]any
-		_ = json.NewDecoder(resp.Body).Decode(&tgErr)
-		writeJSON(w, http.StatusBadGateway, map[string]any{
-			"ok":    false,
-			"error": tgErr,
-		})
-		return
-	}
-	ok(w, map[string]bool{"ok": true})
 }

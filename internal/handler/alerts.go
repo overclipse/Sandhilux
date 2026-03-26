@@ -16,7 +16,6 @@ type alertRow struct {
 	Message      string  `json:"message"`
 	RuleType     string  `json:"rule_type"`
 	RuleDetail   string  `json:"rule_detail"`
-	TelegramSent bool    `json:"telegram_sent"`
 	CreatedAt    string  `json:"created_at"`
 	ResolvedAt   *string `json:"resolved_at,omitempty"`
 }
@@ -35,7 +34,7 @@ func (h *Handler) ListAlerts(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.PG.Query(r.Context(), `
 		SELECT id::text, endpoint_id::text, endpoint_name, type, status,
-		       message, rule_type, rule_detail, telegram_sent, created_at, resolved_at
+		       message, rule_type, rule_detail, created_at, resolved_at
 		FROM alerts
 		WHERE ($1 = '' OR status = $1)
 		  AND ($2 = '' OR type   = $2)
@@ -56,7 +55,7 @@ func (h *Handler) ListAlerts(w http.ResponseWriter, r *http.Request) {
 		var resolvedAt *time.Time
 		if err := rows.Scan(
 			&a.ID, &a.EndpointID, &a.EndpointName, &a.Type, &a.Status,
-			&a.Message, &a.RuleType, &a.RuleDetail, &a.TelegramSent,
+			&a.Message, &a.RuleType, &a.RuleDetail,
 			&createdAt, &resolvedAt,
 		); err != nil {
 			internalError(w, err)
@@ -92,10 +91,10 @@ func (h *Handler) ResolveAlert(w http.ResponseWriter, r *http.Request) {
 		SET status = 'resolved', resolved_at = now()
 		WHERE id = $1
 		RETURNING id::text, endpoint_id::text, endpoint_name, type, status,
-		          message, rule_type, rule_detail, telegram_sent, created_at, resolved_at
+		          message, rule_type, rule_detail, created_at, resolved_at
 	`, id).Scan(
 		&a.ID, &a.EndpointID, &a.EndpointName, &a.Type, &a.Status,
-		&a.Message, &a.RuleType, &a.RuleDetail, &a.TelegramSent,
+		&a.Message, &a.RuleType, &a.RuleDetail,
 		&createdAt, &resolvedAt,
 	)
 	if err != nil {

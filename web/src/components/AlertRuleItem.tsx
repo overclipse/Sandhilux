@@ -22,9 +22,6 @@ export function AlertRuleItem({ rule, onDelete }: Props) {
           {rule.type === 'latency_gt' && `> ${rule.threshold}ms`}
           {rule.type === 'down' && rule.consecutive_fails && t('rule.afterFails', { count: rule.consecutive_fails })}
         </span>
-        {rule.notify_telegram && (
-          <span className={styles.telegramTag}>📨 Telegram</span>
-        )}
       </div>
       {onDelete && (
         <button className="btn btn-danger btn-sm" onClick={() => onDelete(rule.id)}>

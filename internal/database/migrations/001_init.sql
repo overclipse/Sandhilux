@@ -66,7 +66,6 @@ CREATE TABLE IF NOT EXISTS alert_rules (
     type              TEXT NOT NULL CHECK (type IN ('down', 'latency_gt', 'status_code')),
     threshold         INT,
     consecutive_fails INT,
-    notify_telegram   BOOLEAN NOT NULL DEFAULT false,
     created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -86,7 +85,6 @@ CREATE TABLE IF NOT EXISTS alerts (
     message        TEXT NOT NULL DEFAULT '',
     rule_type      TEXT NOT NULL DEFAULT '',
     rule_detail    TEXT NOT NULL DEFAULT '',
-    telegram_sent  BOOLEAN NOT NULL DEFAULT false,
     created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
     resolved_at    TIMESTAMPTZ
 );
@@ -99,17 +97,6 @@ CREATE INDEX IF NOT EXISTS idx_alerts_status_created
 -- Алерты по конкретному эндпоинту (детальная страница).
 CREATE INDEX IF NOT EXISTS idx_alerts_endpoint_id
     ON alerts(endpoint_id);
-
--- ── Telegram settings ────────────────────────────────────────
--- Одна строка на всю команду (id=1, CHECK гарантирует singleton).
-CREATE TABLE IF NOT EXISTS telegram_settings (
-    id         INT PRIMARY KEY DEFAULT 1 CHECK (id = 1),
-    bot_token  TEXT NOT NULL DEFAULT '',
-    chat_id    TEXT NOT NULL DEFAULT '',
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-INSERT INTO telegram_settings (id) VALUES (1) ON CONFLICT DO NOTHING;
 
 -- ── View: endpoints_due ───────────────────────────────────────
 -- Эндпоинты у которых пришло время следующей проверки.

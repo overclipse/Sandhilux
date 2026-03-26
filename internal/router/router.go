@@ -98,10 +98,7 @@ func New(h *handler.Handler) http.Handler {
 				r.Put("/users/{id}/role", h.UpdateUserRole)
 				r.Delete("/users/{id}", h.RemoveUser)
 
-				r.Get("/telegram", h.GetTelegram)
-				r.Put("/telegram", h.SaveTelegram)
-				r.Post("/telegram/test", h.TestTelegram)
-			})
+				})
 		})
 	})
 

@@ -18,11 +18,12 @@ Check your HTTP endpoints every minute. Get notified on Telegram the moment some
 
 ## What it does
 
-- Monitors HTTP endpoints on a configurable schedule
+- Monitors HTTP endpoints on a configurable schedule (per-endpoint interval)
 - Tracks **uptime**, **P50 / P95 latency**, and **incident history**
 - Fires **Telegram alerts** when endpoints go down, become slow, or return wrong status codes
+- Sends **recovery notifications** when an endpoint comes back online
 - Streams live check results to the dashboard via **Server-Sent Events**
-- Supports multiple users with **admin / viewer roles**
+- Supports multiple users with **admin / viewer roles** and self-registration
 
 ---
 
@@ -193,6 +194,37 @@ Auth routes are rate-limited to **10 requests / minute** per IP.
 ├── Dockerfile
 └── .env.example
 ```
+
+---
+
+## Telegram alerts
+
+Sandhilux can notify a Telegram channel or group when something breaks.
+
+### Setup
+
+1. Create a bot via [@BotFather](https://t.me/BotFather) → get the **Bot Token**
+2. Add the bot to your channel/group and get the **Chat ID**
+   - Easiest way: forward a message to [@userinfobot](https://t.me/userinfobot) or check `getUpdates`
+3. Open **Settings → Telegram** in the dashboard and enter both values
+4. Click **Send test** to verify
+
+### Alert types
+
+| Type | Trigger | Emoji |
+|------|---------|-------|
+| `down` | Endpoint unreachable or returns unexpected status | 🔴 |
+| `latency_gt` | Response time exceeds threshold (ms) | 🟡 |
+| `status_code` | Actual HTTP status ≠ expected | 🟠 |
+| Recovery | Endpoint comes back up after being down | ✅ |
+
+Messages are sent as formatted HTML — endpoint name and URL are highlighted.
+
+### Per-rule configuration
+
+Each alert rule has a **Notify Telegram** toggle. You can have:
+- A `down` rule that notifies Telegram
+- A `latency_gt` rule that only appears in the dashboard (no Telegram)
 
 ---
 

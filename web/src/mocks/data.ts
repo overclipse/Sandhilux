@@ -7,7 +7,6 @@ import type {
   LatencyPoint,
   DailyUptime,
   EndpointStats,
-  TelegramSettings,
   User,
 } from '../types/api'
 
@@ -167,19 +166,19 @@ export const MOCK_STATS: Record<string, EndpointStats> = {
 
 export const MOCK_RULES: Record<string, AlertRule[]> = {
   'ep-1': [
-    { id: 'r-1', endpoint_id: 'ep-1', type: 'down', consecutive_fails: 3, notify_telegram: true, created_at: '2025-01-10T08:00:00Z' },
-    { id: 'r-2', endpoint_id: 'ep-1', type: 'latency_gt', threshold: 2000, notify_telegram: false, created_at: '2025-01-10T08:00:00Z' },
+    { id: 'r-1', endpoint_id: 'ep-1', type: 'down', consecutive_fails: 3, created_at: '2025-01-10T08:00:00Z' },
+    { id: 'r-2', endpoint_id: 'ep-1', type: 'latency_gt', threshold: 2000, created_at: '2025-01-10T08:00:00Z' },
   ],
   'ep-2': [
-    { id: 'r-3', endpoint_id: 'ep-2', type: 'latency_gt', threshold: 500, notify_telegram: true, created_at: '2025-01-12T10:00:00Z' },
+    { id: 'r-3', endpoint_id: 'ep-2', type: 'latency_gt', threshold: 500, created_at: '2025-01-12T10:00:00Z' },
   ],
   'ep-3': [
-    { id: 'r-4', endpoint_id: 'ep-3', type: 'down', consecutive_fails: 1, notify_telegram: true, created_at: '2025-01-15T09:30:00Z' },
-    { id: 'r-5', endpoint_id: 'ep-3', type: 'latency_gt', threshold: 3000, notify_telegram: true, created_at: '2025-01-15T09:30:00Z' },
+    { id: 'r-4', endpoint_id: 'ep-3', type: 'down', consecutive_fails: 1, created_at: '2025-01-15T09:30:00Z' },
+    { id: 'r-5', endpoint_id: 'ep-3', type: 'latency_gt', threshold: 3000, created_at: '2025-01-15T09:30:00Z' },
   ],
   'ep-4': [],
   'ep-5': [
-    { id: 'r-6', endpoint_id: 'ep-5', type: 'down', consecutive_fails: 2, notify_telegram: false, created_at: '2025-02-10T14:00:00Z' },
+    { id: 'r-6', endpoint_id: 'ep-5', type: 'down', consecutive_fails: 2, created_at: '2025-02-10T14:00:00Z' },
   ],
 }
 
@@ -222,7 +221,6 @@ export const MOCK_ALERTS: Alert[] = [
     message: 'Endpoint unreachable — connection timeout after 15s',
     rule_type: 'down',
     rule_detail: 'after 1 consecutive fail',
-    telegram_sent: true,
     created_at: new Date(Date.now() - 3_600_000).toISOString(),
   },
   {
@@ -234,7 +232,6 @@ export const MOCK_ALERTS: Alert[] = [
     message: 'latency 843ms > 500ms',
     rule_type: 'latency_gt',
     rule_detail: 'threshold 500ms',
-    telegram_sent: true,
     created_at: new Date(Date.now() - 1_200_000).toISOString(),
   },
   {
@@ -246,7 +243,6 @@ export const MOCK_ALERTS: Alert[] = [
     message: 'Endpoint unreachable — HTTP 503',
     rule_type: 'down',
     rule_detail: 'after 1 consecutive fail',
-    telegram_sent: true,
     created_at: new Date(Date.now() - 86_400_000).toISOString(),
     resolved_at: new Date(Date.now() - 82_000_000).toISOString(),
   },
@@ -259,7 +255,6 @@ export const MOCK_ALERTS: Alert[] = [
     message: 'latency 2541ms > 2000ms',
     rule_type: 'latency_gt',
     rule_detail: 'threshold 2000ms',
-    telegram_sent: false,
     created_at: new Date(Date.now() - 172_800_000).toISOString(),
     resolved_at: new Date(Date.now() - 170_000_000).toISOString(),
   },
@@ -276,9 +271,3 @@ export const MOCK_USERS: User[] = [
   { id: '1', email: 'admin@example.com', role: 'admin', name: 'Admin User', created_at: '2025-01-01T00:00:00Z' },
   { id: '2', email: 'viewer@example.com', role: 'viewer', name: 'Viewer User', created_at: '2025-02-01T00:00:00Z' },
 ]
-
-export const MOCK_TELEGRAM: TelegramSettings = {
-  bot_token: '123456:ABC-DEF',
-  chat_id: '-1001234567890',
-  configured: true,
-}

@@ -46,7 +46,6 @@ export interface Alert {
   message: string
   rule_type: string
   rule_detail: string
-  telegram_sent: boolean
   created_at: string
   resolved_at?: string
 }
@@ -59,7 +58,6 @@ export interface AlertRule {
   type: AlertRuleType
   threshold?: number
   consecutive_fails?: number
-  notify_telegram: boolean
   created_at: string
 }
 
@@ -67,7 +65,6 @@ export interface AlertRuleCreate {
   type: AlertRuleType
   threshold?: number
   consecutive_fails?: number
-  notify_telegram: boolean
 }
 
 export interface MetricsOverview {
@@ -118,12 +115,6 @@ export interface User {
   name?: string
   avatar_url?: string
   created_at: string
-}
-
-export interface TelegramSettings {
-  bot_token: string
-  chat_id: string
-  configured: boolean
 }
 
 export interface WorstEndpoint {

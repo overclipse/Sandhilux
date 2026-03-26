@@ -186,7 +186,7 @@ func TestListRules_NilDB_ReturnsEmptyArray(t *testing.T) {
 func TestCreateRule_MissingType_Returns400(t *testing.T) {
 	h := newNilHandler()
 	req := chiRequest(http.MethodPost, "/", "id", "some-id")
-	req = withBody(req, `{"notify_telegram":false}`)
+	req = withBody(req, `{"threshold":null}`)
 	w := httptest.NewRecorder()
 	h.CreateRule(w, req)
 

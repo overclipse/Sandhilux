@@ -78,7 +78,6 @@ var protectedGET = []string{
 	"/api/metrics/uptime",
 	"/api/alerts/",
 	"/api/settings/users",
-	"/api/settings/telegram",
 }
 
 func TestRouter_ProtectedRoutes_WithoutToken_Return401(t *testing.T) {
@@ -131,7 +130,7 @@ func TestRouter_Settings_ViewerRole_Returns403(t *testing.T) {
 
 	token := issueToken(t, "viewer-1", "viewer")
 
-	for _, path := range []string{"/api/settings/users", "/api/settings/telegram"} {
+	for _, path := range []string{"/api/settings/users"} {
 		t.Run(path, func(t *testing.T) {
 			req, _ := http.NewRequest(http.MethodGet, srv.URL+path, nil)
 			req.Header.Set("Authorization", "Bearer "+token)

@@ -53,9 +53,6 @@ export function AlertCard({ alert }: Props) {
             {alert.endpoint_name}
           </button>
           <span className={`badge badge-${alert.type}`}>{alert.type.toUpperCase()}</span>
-          {alert.telegram_sent && (
-            <span className={styles.telegramPill}>📨 {t('alerts.telegramSent')}</span>
-          )}
           <span className={styles.durationPill}>
             {formatDuration(alert.created_at, alert.resolved_at ?? undefined)}
           </span>

@@ -7,12 +7,10 @@
 package checker
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
 	"sync"
 	"time"
 
@@ -200,7 +198,7 @@ func (c *Checker) triggerAlerts(ctx context.Context, ep Endpoint, result Result,
 	// Update consecutive-fail counter.
 	var failCount int
 	if result.IsUp {
-		c.failCounts.Delete(ep.ID) // reset on recovery
+		c.failCounts.LoadAndDelete(ep.ID)
 	} else {
 		prev, _ := c.failCounts.LoadOrStore(ep.ID, 0)
 		failCount = prev.(int) + 1
@@ -209,7 +207,7 @@ func (c *Checker) triggerAlerts(ctx context.Context, ep Endpoint, result Result,
 
 	// Fetch alert rules for this endpoint.
 	rows, err := c.pg.Query(ctx, `
-		SELECT id::text, type, threshold, consecutive_fails, notify_telegram
+		SELECT id::text, type, threshold, consecutive_fails
 		FROM alert_rules WHERE endpoint_id = $1
 	`, ep.ID)
 	if err != nil {
@@ -223,13 +221,12 @@ func (c *Checker) triggerAlerts(ctx context.Context, ep Endpoint, result Result,
 		Type             string
 		Threshold        *int
 		ConsecutiveFails *int
-		NotifyTelegram   bool
 	}
 
 	for rows.Next() {
 		var rule alertRule
 		if err := rows.Scan(&rule.ID, &rule.Type, &rule.Threshold,
-			&rule.ConsecutiveFails, &rule.NotifyTelegram); err != nil {
+			&rule.ConsecutiveFails); err != nil {
 			log.Printf("checker: scan alert rule: %v", err)
 			continue
 		}
@@ -248,7 +245,7 @@ func (c *Checker) triggerAlerts(ctx context.Context, ep Endpoint, result Result,
 			}
 			msg := fmt.Sprintf("%s is DOWN (%d consecutive failures)", ep.Name, failCount)
 			c.createAlertIfNone(ctx, ep, "down", "down",
-				fmt.Sprintf("%d consecutive failures", failCount), msg, rule.NotifyTelegram)
+				fmt.Sprintf("%d consecutive failures", failCount), msg)
 
 		case "latency_gt":
 			if rule.Threshold == nil || latencyMs <= *rule.Threshold {
@@ -256,7 +253,7 @@ func (c *Checker) triggerAlerts(ctx context.Context, ep Endpoint, result Result,
 			}
 			msg := fmt.Sprintf("%s latency %dms exceeds threshold %dms", ep.Name, latencyMs, *rule.Threshold)
 			c.createAlertIfNone(ctx, ep, "slow", "latency_gt",
-				fmt.Sprintf(">%dms", *rule.Threshold), msg, rule.NotifyTelegram)
+				fmt.Sprintf(">%dms", *rule.Threshold), msg)
 
 		case "status_code":
 			// threshold = expected status code; fire if actual differs
@@ -265,7 +262,7 @@ func (c *Checker) triggerAlerts(ctx context.Context, ep Endpoint, result Result,
 			}
 			msg := fmt.Sprintf("%s returned %d (expected %d)", ep.Name, result.StatusCode, *rule.Threshold)
 			c.createAlertIfNone(ctx, ep, "status", "status_code",
-				fmt.Sprintf("expected %d", *rule.Threshold), msg, rule.NotifyTelegram)
+				fmt.Sprintf("expected %d", *rule.Threshold), msg)
 		}
 	}
 }
@@ -276,7 +273,6 @@ func (c *Checker) createAlertIfNone(
 	ctx context.Context,
 	ep Endpoint,
 	alertType, ruleType, ruleDetail, message string,
-	notifyTelegram bool,
 ) {
 	var count int
 	err := c.pg.QueryRow(ctx, `
@@ -297,46 +293,6 @@ func (c *Checker) createAlertIfNone(
 	}
 
 	log.Printf("checker: alert [%s] created for %s: %s", alertType, ep.Name, message)
-
-	if notifyTelegram {
-		go c.notifyTelegram(message) // non-blocking
-	}
-}
-
-// notifyTelegram sends a message via the configured Telegram bot.
-// Runs in a separate goroutine so it never blocks the check loop.
-func (c *Checker) notifyTelegram(message string) {
-	if c.pg == nil {
-		return
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	var botToken, chatID string
-	err := c.pg.QueryRow(ctx,
-		`SELECT bot_token, chat_id FROM telegram_settings WHERE id = 1`,
-	).Scan(&botToken, &chatID)
-	if err != nil || botToken == "" || chatID == "" {
-		return
-	}
-
-	body, _ := json.Marshal(map[string]string{
-		"chat_id": chatID,
-		"text":    "🔔 " + message,
-	})
-	resp, err := http.Post(
-		fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", botToken),
-		"application/json",
-		bytes.NewReader(body),
-	)
-	if err != nil {
-		log.Printf("checker: telegram: %v", err)
-		return
-	}
-	resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		log.Printf("checker: telegram: HTTP %d", resp.StatusCode)
-	}
 }
 
 // checkOne проверяет один эндпоинт, сохраняет результат и отправляет событие в SSE канал.
@@ -369,4 +325,3 @@ func (c *Checker) ProbeOne(ctx context.Context, ep Endpoint) CheckEvent {
 	})
 	return c.saveResult(ctx, ep, result)
 }
-

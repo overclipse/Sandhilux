@@ -1,5 +1,5 @@
 import client from './client'
-import type { TelegramSettings, User, VersionInfo } from '../types/api'
+import type { User, VersionInfo } from '../types/api'
 
 export const settingsApi = {
   getVersion: () =>
@@ -17,13 +17,4 @@ export const settingsApi = {
 
   changePassword: (current: string, newPassword: string) =>
     client.put('/api/settings/password', { current_password: current, new_password: newPassword }),
-
-  getTelegram: () =>
-    client.get<TelegramSettings>('/api/settings/telegram').then((r) => r.data),
-
-  saveTelegram: (bot_token: string, chat_id: string) =>
-    client.put<TelegramSettings>('/api/settings/telegram', { bot_token, chat_id }).then((r) => r.data),
-
-  testTelegram: () =>
-    client.post('/api/settings/telegram/test'),
 }

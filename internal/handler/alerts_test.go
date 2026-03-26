@@ -60,7 +60,6 @@ func TestAlertRow_JSONFields(t *testing.T) {
 		Message:      "Service is down",
 		RuleType:     "down",
 		RuleDetail:   "3 consecutive failures",
-		TelegramSent: false,
 		CreatedAt:    "2024-01-01T00:00:00Z",
 	}
 	b, err := json.Marshal(a)
@@ -72,7 +71,7 @@ func TestAlertRow_JSONFields(t *testing.T) {
 
 	for _, field := range []string{
 		"id", "endpoint_id", "endpoint_name", "type", "status",
-		"message", "rule_type", "rule_detail", "telegram_sent", "created_at",
+		"message", "rule_type", "rule_detail", "created_at",
 	} {
 		if _, ok := m[field]; !ok {
 			t.Errorf("missing field %q in alertRow JSON", field)

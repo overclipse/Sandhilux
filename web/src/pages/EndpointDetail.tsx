@@ -29,7 +29,6 @@ export function EndpointDetail() {
   const [ruleType, setRuleType] = useState<'down' | 'latency_gt' | 'status_code'>('down')
   const [ruleThreshold, setRuleThreshold] = useState('')
   const [ruleFails, setRuleFails] = useState('3')
-  const [ruleTelegram, setRuleTelegram] = useState(false)
 
   const { data: endpoint, error: endpointError, refetch } = useQuery({
     queryKey: ['endpoint', id],
@@ -88,7 +87,6 @@ export function EndpointDetail() {
         type: ruleType,
         threshold: ruleType === 'latency_gt' ? Number(ruleThreshold) : undefined,
         consecutive_fails: ruleType === 'down' ? Number(ruleFails) : undefined,
-        notify_telegram: ruleTelegram,
       }),
     onSuccess: () => {
       setAddRuleOpen(false)
@@ -256,10 +254,6 @@ export function EndpointDetail() {
               {ruleType === 'down' && (
                 <input className="form-input" style={{ width: 140 }} type="number" placeholder={t('rule.consecutiveFails')} value={ruleFails} onChange={(e) => setRuleFails(e.target.value)} />
               )}
-              <label className={styles.telegramToggle}>
-                <input type="checkbox" checked={ruleTelegram} onChange={(e) => setRuleTelegram(e.target.checked)} />
-                {t('rule.telegram')}
-              </label>
               <button className="btn btn-primary btn-sm" onClick={() => createRule.mutate()} disabled={createRule.isPending}>
                 {createRule.isPending ? <span className="spinner" /> : t('rule.save')}
               </button>
