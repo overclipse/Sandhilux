@@ -1,6 +1,19 @@
 import client from './client'
 import type { Endpoint, EndpointCreate, AlertRule, AlertRuleCreate, CheckRecord, EndpointStats } from '../types/api'
 
+// headers in the form is a raw JSON string; the API expects a plain object.
+function serializeEndpoint(body: EndpointCreate | Partial<EndpointCreate>) {
+  let headers: Record<string, string> = {}
+  if (body.headers && body.headers.trim()) {
+    try {
+      headers = JSON.parse(body.headers)
+    } catch {
+      headers = {}
+    }
+  }
+  return { ...body, headers }
+}
+
 export const endpointsApi = {
   list: () =>
     client.get<Endpoint[]>('/api/endpoints').then((r) => r.data),
@@ -9,13 +22,16 @@ export const endpointsApi = {
     client.get<Endpoint>(`/api/endpoints/${id}`).then((r) => r.data),
 
   create: (body: EndpointCreate) =>
-    client.post<Endpoint>('/api/endpoints', body).then((r) => r.data),
+    client.post<Endpoint>('/api/endpoints', serializeEndpoint(body)).then((r) => r.data),
 
   update: (id: string, body: Partial<EndpointCreate>) =>
-    client.put<Endpoint>(`/api/endpoints/${id}`, body).then((r) => r.data),
+    client.put<Endpoint>(`/api/endpoints/${id}`, serializeEndpoint(body)).then((r) => r.data),
 
   delete: (id: string) =>
     client.delete(`/api/endpoints/${id}`),
+
+  toggle: (id: string) =>
+    client.patch<Endpoint>(`/api/endpoints/${id}/toggle`).then((r) => r.data),
 
   checkNow: (id: string) =>
     client.post<CheckRecord>(`/api/endpoints/${id}/check`).then((r) => r.data),

@@ -1,0 +1,32 @@
+.wrap {
+  padding: 4px 0;
+}
+
+.bar {
+  position: relative;
+  height: 24px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.segment {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 2px;
+  transition: opacity 0.15s;
+}
+
+.segment:hover {
+  opacity: 0.75;
+}
+
+.labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 10px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}

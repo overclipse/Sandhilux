@@ -1,3 +1,4 @@
+import { useT } from '../i18n'
 import type { AlertRule } from '../types/api'
 import styles from './AlertRuleItem.module.css'
 
@@ -6,20 +7,20 @@ interface Props {
   onDelete?: (id: string) => void
 }
 
-const ruleLabels: Record<AlertRule['type'], string> = {
-  down: 'Down detection',
-  latency_gt: 'Latency threshold',
-  status_code: 'Status code mismatch',
-}
-
 export function AlertRuleItem({ rule, onDelete }: Props) {
+  const t = useT()
+  const ruleLabels: Record<string, string> = {
+    down: t('rule.down'),
+    latency_gt: t('rule.latency'),
+    status_code: t('rule.statusMismatch'),
+  }
   return (
     <div className={styles.item}>
       <div className={styles.info}>
         <span className={styles.type}>{ruleLabels[rule.type]}</span>
         <span className={styles.detail}>
           {rule.type === 'latency_gt' && `> ${rule.threshold}ms`}
-          {rule.type === 'down' && rule.consecutive_fails && `after ${rule.consecutive_fails} fails`}
+          {rule.type === 'down' && rule.consecutive_fails && t('rule.afterFails', { count: rule.consecutive_fails })}
         </span>
         {rule.notify_telegram && (
           <span className={styles.telegramTag}>📨 Telegram</span>
@@ -27,7 +28,7 @@ export function AlertRuleItem({ rule, onDelete }: Props) {
       </div>
       {onDelete && (
         <button className="btn btn-danger btn-sm" onClick={() => onDelete(rule.id)}>
-          Remove
+          {t('rule.remove')}
         </button>
       )}
     </div>

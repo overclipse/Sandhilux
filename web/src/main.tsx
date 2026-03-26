@@ -4,11 +4,14 @@ import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { App } from './App'
 import './styles/globals.css'
+import './styles/theme-light.css'
 import client from './api/client'
-import { mockAdapter } from './mocks/adapter'
 
-// TODO: убрать когда бэкенд будет готов
-client.defaults.adapter = mockAdapter
+// Use mock adapter only when VITE_USE_MOCK=true (local dev without backend)
+if (import.meta.env.VITE_USE_MOCK === 'true') {
+  const { mockAdapter } = await import('./mocks/adapter')
+  client.defaults.adapter = mockAdapter
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {

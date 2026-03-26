@@ -7,13 +7,14 @@
 .sidebar {
   width: 240px;
   flex-shrink: 0;
-  background: rgba(8, 12, 24, 0.85);
+  background: var(--sidebar-bg);
   backdrop-filter: blur(24px);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   position: relative;
   z-index: 10;
+  transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ambient glow from sidebar */
@@ -35,12 +36,14 @@
   padding: 24px 20px 20px;
   cursor: pointer;
   transition: opacity 0.15s;
+  overflow: hidden;
 }
 .logo:hover { opacity: 0.85; }
 
 .logoIcon {
   width: 52px;
   height: 52px;
+  flex-shrink: 0;
   object-fit: contain;
   filter: drop-shadow(0 0 10px rgba(0, 144, 227, 0.6)) drop-shadow(0 0 28px rgba(0, 144, 227, 0.25));
   animation: glow-pulse 3s ease-in-out infinite;
@@ -51,6 +54,9 @@
   font-weight: 700;
   color: var(--text-1);
   letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.2s, max-width 0.25s;
 }
 
 .nav {
@@ -59,6 +65,7 @@
   flex-direction: column;
   padding: 8px 12px;
   gap: 2px;
+  overflow: hidden;
 }
 
 .navItem {
@@ -72,9 +79,11 @@
   font-weight: 500;
   transition: all 0.2s ease;
   position: relative;
+  white-space: nowrap;
+  overflow: hidden;
 }
 .navItem:hover {
-  background: rgba(255,255,255,0.04);
+  background: var(--bg-subtle-hover);
   color: var(--text-2);
 }
 
@@ -84,7 +93,6 @@
   box-shadow: inset 0 0 20px rgba(59, 130, 246, 0.04);
 }
 
-/* active indicator bar */
 .navActive::before {
   content: '';
   position: absolute;
@@ -102,15 +110,21 @@
   color: var(--blue);
 }
 
-.navIcon {
-  font-size: 15px;
+/* SVG nav icons */
+.navSvg {
   width: 18px;
-  text-align: center;
+  height: 18px;
   flex-shrink: 0;
-  opacity: 0.55;
+  opacity: 0.5;
   transition: opacity 0.2s;
 }
-.navActive .navIcon { opacity: 1; }
+.navActive .navSvg { opacity: 1; }
+
+.navLabel {
+  overflow: hidden;
+  transition: opacity 0.2s, max-width 0.25s;
+  max-width: 160px;
+}
 
 .badge {
   margin-left: auto;
@@ -125,31 +139,257 @@
   line-height: 1.5;
   box-shadow: 0 0 12px rgba(239, 68, 68, 0.5), 0 0 4px rgba(239, 68, 68, 0.3);
   animation: glow-pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
 }
 
-/* bottom divider line */
-.sidebar > :last-child {
+/* ── Controls row ────────────────────────────────── */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
   border-top: 1px solid var(--border);
 }
 
-.logoutBtn {
-  margin: 0;
-  padding: 14px 24px;
-  font-size: 12px;
-  color: var(--text-3);
-  border-radius: 0;
-  justify-content: flex-start;
+.controlBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-sm);
   background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.controlBtn svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.controlBtn:hover {
+  color: var(--text-1);
+  background: var(--bg-subtle-hover);
+}
+
+.langLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.collapseBtn { margin-left: auto; }
+
+/* ── User section at bottom ──────────────────────── */
+.userSection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.userInfo {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--border-subtle);
+}
+
+.avatarFallback {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.userMeta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  transition: opacity 0.2s, max-width 0.25s;
+  max-width: 160px;
+}
+
+.userName {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userEmail {
+  font-size: 10px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.logoutBtn {
+  flex-shrink: 0;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
   transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .logoutBtn:hover {
   color: var(--text-2);
-  background: rgba(255,255,255,0.02);
+  background: var(--bg-subtle-hover);
 }
 
 .main {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   background: var(--bg-base);
   position: relative;
+  min-width: 0;
+}
+
+/* ── Manual collapsed state ─────────────────────────── */
+.collapsed {
+  width: 64px;
+}
+.collapsed .logoText { opacity: 0; max-width: 0; }
+.collapsed .navLabel { opacity: 0; max-width: 0; }
+.collapsed .badge { display: none; }
+.collapsed .userMeta { opacity: 0; max-width: 0; }
+.collapsed .logoutBtn { display: none; }
+.collapsed .logo { padding: 24px 0 20px; justify-content: center; }
+.collapsed .navItem { padding: 10px 0; justify-content: center; }
+.collapsed .navActive::before { display: none; }
+.collapsed .userSection { justify-content: center; padding: 14px 0; }
+.collapsed .controls { justify-content: center; flex-wrap: wrap; padding: 8px 4px; }
+.collapsed .collapseBtn { margin-left: 0; }
+
+/* Tooltip on collapsed nav items */
+.collapsed .navItem::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-1);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  box-shadow: var(--shadow);
+  z-index: 100;
+}
+.collapsed .navItem:hover::after {
+  opacity: 1;
+}
+
+/* ── Auto-collapse at 1024px ────────────────────────── */
+@media (max-width: 1024px) {
+  .sidebar { width: 64px; }
+  .logoText { opacity: 0; max-width: 0; }
+  .navLabel { opacity: 0; max-width: 0; }
+  .badge { display: none; }
+  .userMeta { opacity: 0; max-width: 0; }
+  .logoutBtn { display: none; }
+  .logo { padding: 24px 0 20px; justify-content: center; }
+  .navItem { padding: 10px 0; justify-content: center; }
+  .navActive::before { display: none; }
+  .userSection { justify-content: center; padding: 14px 0; }
+  .controls { justify-content: center; flex-wrap: wrap; padding: 8px 4px; }
+  .collapseBtn { display: none; }
+}
+
+/* ── Bottom nav at 640px ─────────────────────────────── */
+@media (max-width: 640px) {
+  .layout { flex-direction: column; }
+
+  .sidebar {
+    width: 100% !important;
+    height: 56px;
+    flex-direction: row;
+    border-right: none;
+    border-top: 1px solid var(--border);
+    order: 2;
+    align-items: center;
+    padding: 0 8px;
+  }
+
+  .sidebar::after { display: none; }
+  .logo { display: none; }
+  .controls { display: none; }
+
+  .nav {
+    flex-direction: row;
+    flex: 1;
+    padding: 0;
+    gap: 0;
+    justify-content: space-around;
+  }
+
+  .navItem {
+    flex-direction: column;
+    gap: 3px;
+    padding: 8px 12px;
+    font-size: 10px;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+  }
+
+  .navLabel { opacity: 1 !important; max-width: 60px !important; font-size: 10px; }
+
+  .navActive::before { display: none; }
+  .navActive { background: transparent; color: var(--blue); }
+  .navActive .navSvg { opacity: 1; }
+
+  .navSvg { width: 20px; height: 20px; }
+
+  .badge {
+    display: flex;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    min-width: 14px;
+    padding: 0 4px;
+    font-size: 9px;
+  }
+
+  .userSection { display: none; }
+  .main { order: 1; flex: 1; }
 }

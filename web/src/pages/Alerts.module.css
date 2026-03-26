@@ -50,7 +50,7 @@
 }
 
 .filterBtn {
-  background: rgba(255,255,255,0.02);
+  background: var(--bg-subtle);
   border: 1px solid var(--border);
   border-radius: 9999px;
   color: var(--text-3);
@@ -64,7 +64,7 @@
 .filterBtn:hover {
   border-color: var(--border-light);
   color: var(--text-2);
-  background: rgba(255,255,255,0.04);
+  background: var(--bg-subtle-hover);
 }
 
 .active {
@@ -72,6 +72,49 @@
   color: var(--blue);
   background: var(--blue-dim);
   box-shadow: 0 0 10px rgba(59, 130, 246, 0.1);
+}
+
+/* ── Mini stats ──────────────────────────────────── */
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.miniStat {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.miniLabel {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+}
+
+.miniValue {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Search + sort bar ───────────────────────────── */
+.searchBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.searchInput {
+  flex: 1;
+  font-size: 12px;
+  padding: 8px 12px;
 }
 
 .list {

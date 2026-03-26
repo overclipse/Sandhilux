@@ -2,30 +2,27 @@ import { useEffect, useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { settingsApi } from '../api/settings'
 import { useAppStore } from '../store'
+import { useT } from '../i18n'
 import type { UserRole } from '../types/api'
+import { ErrorBanner } from '../components/ErrorBanner'
+import { getErrorMessage } from '../utils/error'
 import styles from './Settings.module.css'
 
 export function Settings() {
+  const t = useT()
   const user = useAppStore((s) => s.user)
-
-  // Password form
-  const [currentPw, setCurrentPw] = useState('')
-  const [newPw, setNewPw] = useState('')
-  const [confirmPw, setConfirmPw] = useState('')
-  const [pwError, setPwError] = useState('')
-  const [pwSuccess, setPwSuccess] = useState(false)
 
   // Telegram form
   const [botToken, setBotToken] = useState('')
   const [chatId, setChatId] = useState('')
   const [telegramMsg, setTelegramMsg] = useState('')
 
-  const { data: users = [], refetch: refetchUsers } = useQuery({
+  const { data: users = [], refetch: refetchUsers, error: usersError } = useQuery({
     queryKey: ['users'],
     queryFn: () => settingsApi.getUsers(),
   })
 
-  const { data: telegram, refetch: refetchTelegram } = useQuery({
+  const { data: telegram, refetch: refetchTelegram, error: telegramError } = useQuery({
     queryKey: ['telegram'],
     queryFn: () => settingsApi.getTelegram(),
   })
@@ -38,24 +35,15 @@ export function Settings() {
     }
   }, [telegram])
 
-  const changePwMutation = useMutation({
-    mutationFn: () => settingsApi.changePassword(currentPw, newPw),
-    onSuccess: () => {
-      setPwSuccess(true)
-      setCurrentPw(''); setNewPw(''); setConfirmPw('')
-    },
-    onError: () => setPwError('Incorrect current password'),
-  })
-
   const saveTelegramMutation = useMutation({
     mutationFn: () => settingsApi.saveTelegram(botToken, chatId),
-    onSuccess: () => { setTelegramMsg('Saved'); refetchTelegram() },
+    onSuccess: () => { setTelegramMsg(t('settings.saved')); refetchTelegram() },
   })
 
   const testTelegramMutation = useMutation({
     mutationFn: () => settingsApi.testTelegram(),
-    onSuccess: () => setTelegramMsg('Test message sent!'),
-    onError: () => setTelegramMsg('Failed to send test message'),
+    onSuccess: () => setTelegramMsg(t('settings.testSent')),
+    onError: () => setTelegramMsg(t('settings.testFailed')),
   })
 
   const updateRoleMutation = useMutation({
@@ -69,79 +57,64 @@ export function Settings() {
     onSuccess: () => refetchUsers(),
   })
 
-  function handleChangePw(e: React.FormEvent) {
-    e.preventDefault()
-    setPwError('')
-    setPwSuccess(false)
-    if (newPw !== confirmPw) { setPwError('Passwords do not match'); return }
-    if (newPw.length < 8) { setPwError('New password must be at least 8 characters'); return }
-    changePwMutation.mutate()
-  }
-
   return (
     <div className={styles.page}>
-      <h1 className={styles.pageTitle}>Settings</h1>
+      <h1 className={styles.pageTitle}>{t('settings.title')}</h1>
+
+      {(usersError || telegramError) && (
+        <ErrorBanner
+          message={getErrorMessage(usersError || telegramError)}
+          onRetry={() => { refetchUsers(); refetchTelegram() }}
+        />
+      )}
 
       {/* Profile */}
       <section className={`card ${styles.section}`}>
-        <h2 className={styles.sectionTitle}>Profile</h2>
+        <h2 className={styles.sectionTitle}>{t('settings.profile')}</h2>
         <div className={styles.sectionBody}>
-          <div className="form-group">
-            <label className="form-label">Email</label>
-            <input className="form-input" value={user?.email ?? ''} readOnly style={{ opacity: 0.6 }} />
-          </div>
-
-          <form onSubmit={handleChangePw} className={styles.pwForm}>
-            <h3 className={styles.subTitle}>Change password</h3>
-            <div className={styles.pwGrid}>
-              <div className="form-group">
-                <label className="form-label">Current password</label>
-                <input className="form-input" type="password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} required />
+          <div className={styles.profileRow}>
+            {user?.avatar_url ? (
+              <img src={user.avatar_url} className={styles.profileAvatar} alt="" />
+            ) : (
+              <div className={styles.profileAvatarFallback}>
+                {(user?.name || user?.email || '?')[0].toUpperCase()}
               </div>
-              <div className="form-group">
-                <label className="form-label">New password</label>
-                <input className="form-input" type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} required />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Confirm new password</label>
-                <input className="form-input" type="password" value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)} required />
-              </div>
+            )}
+            <div className={styles.profileInfo}>
+              <span className={styles.profileName}>{user?.name || 'User'}</span>
+              <span className={styles.profileEmail}>{user?.email}</span>
+              <span className={styles.profileRole}>{user?.role}</span>
             </div>
-            {pwError && <p className="form-error">{pwError}</p>}
-            {pwSuccess && <p style={{ color: 'var(--green)', fontSize: 13 }}>Password changed successfully</p>}
-            <button type="submit" className="btn btn-primary btn-sm" disabled={changePwMutation.isPending}>
-              {changePwMutation.isPending ? <span className="spinner" /> : 'Update password'}
-            </button>
-          </form>
+          </div>
         </div>
       </section>
 
       {/* Telegram */}
       <section className={`card ${styles.section}`}>
         <div className={styles.sectionTitleRow}>
-          <h2 className={styles.sectionTitle}>Telegram</h2>
+          <h2 className={styles.sectionTitle}>{t('settings.telegram')}</h2>
           <span className={`${styles.telegramStatus} ${telegram?.configured ? styles.connected : styles.notConfigured}`}>
-            {telegram?.configured ? '● Connected' : '○ Not configured'}
+            {telegram?.configured ? '● ' + t('settings.connected') : '○ ' + t('settings.notConfigured')}
           </span>
         </div>
         <div className={styles.sectionBody}>
           <div className={styles.telegramGrid}>
             <div className="form-group">
-              <label className="form-label">Bot Token</label>
+              <label className="form-label">{t('settings.botToken')}</label>
               <input className="form-input" type="password" value={botToken} onChange={(e) => setBotToken(e.target.value)} placeholder="123456:ABC-DEF…" />
             </div>
             <div className="form-group">
-              <label className="form-label">Chat ID</label>
+              <label className="form-label">{t('settings.chatId')}</label>
               <input className="form-input" value={chatId} onChange={(e) => setChatId(e.target.value)} placeholder="-1001234567890" />
             </div>
           </div>
           {telegramMsg && <p style={{ fontSize: 13, color: 'var(--green)' }}>{telegramMsg}</p>}
           <div className={styles.telegramActions}>
             <button className="btn btn-primary btn-sm" onClick={() => saveTelegramMutation.mutate()} disabled={saveTelegramMutation.isPending}>
-              {saveTelegramMutation.isPending ? <span className="spinner" /> : 'Save'}
+              {saveTelegramMutation.isPending ? <span className="spinner" /> : t('settings.save')}
             </button>
             <button className="btn btn-ghost btn-sm" onClick={() => testTelegramMutation.mutate()} disabled={testTelegramMutation.isPending || !telegram?.configured}>
-              Send test
+              {t('settings.sendTest')}
             </button>
           </div>
         </div>
@@ -149,14 +122,14 @@ export function Settings() {
 
       {/* Team members */}
       <section className={`card ${styles.section}`}>
-        <h2 className={styles.sectionTitle}>Team members</h2>
+        <h2 className={styles.sectionTitle}>{t('settings.team')}</h2>
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>User</th>
-                <th>Role</th>
-                <th>Joined</th>
+                <th>{t('settings.user')}</th>
+                <th>{t('settings.role')}</th>
+                <th>{t('settings.joined')}</th>
                 <th />
               </tr>
             </thead>
@@ -165,8 +138,15 @@ export function Settings() {
                 <tr key={u.id}>
                   <td>
                     <div className={styles.userCell}>
-                      <span className={styles.avatar}>{u.email[0].toUpperCase()}</span>
-                      <span>{u.email}</span>
+                      {u.avatar_url ? (
+                        <img src={u.avatar_url} className={styles.avatar} alt="" />
+                      ) : (
+                        <span className={styles.avatarFallback}>{(u.name || u.email)[0].toUpperCase()}</span>
+                      )}
+                      <div className={styles.userCellMeta}>
+                        {u.name && <span className={styles.userCellName}>{u.name}</span>}
+                        <span>{u.email}</span>
+                      </div>
                     </div>
                   </td>
                   <td>
@@ -177,8 +157,8 @@ export function Settings() {
                       onChange={(e) => updateRoleMutation.mutate({ userId: u.id, role: e.target.value as UserRole })}
                       disabled={u.id === user?.id}
                     >
-                      <option value="admin">Admin</option>
-                      <option value="viewer">Viewer</option>
+                      <option value="admin">{t('settings.admin')}</option>
+                      <option value="viewer">{t('settings.viewer')}</option>
                     </select>
                   </td>
                   <td style={{ color: 'var(--text-3)', fontSize: 12 }}>
@@ -187,7 +167,7 @@ export function Settings() {
                   <td>
                     {u.id !== user?.id && (
                       <button className="btn btn-danger btn-sm" onClick={() => removeUserMutation.mutate(u.id)}>
-                        Remove
+                        {t('settings.remove')}
                       </button>
                     )}
                   </td>

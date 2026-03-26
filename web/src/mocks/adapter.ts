@@ -22,7 +22,10 @@ export const mockAdapter: AxiosAdapter = (config) => {
   const url = config.url ?? ''
 
   // Auth
-  if (url.includes('/api/auth/')) return ok({ access_token: 'dev', user: MOCK_USERS[0] })
+  if (url.includes('/api/auth/')) return ok({})
+
+  // Me
+  if (url === '/api/me') return ok(MOCK_USERS[0])
 
   // Endpoints list
   if (url === '/api/endpoints' && config.method === 'get') return ok(MOCK_ENDPOINTS)

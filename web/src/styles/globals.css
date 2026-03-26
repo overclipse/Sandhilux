@@ -33,6 +33,25 @@
   --radius-lg: 14px;
   --radius-xl: 18px;
 
+  /* ── Component-level backgrounds ────────────────── */
+  --bg-input:       rgba(5, 9, 16, 0.6);
+  --bg-input-focus: rgba(5, 9, 16, 0.8);
+  --bg-ghost:       rgba(255, 255, 255, 0.03);
+  --bg-ghost-hover: rgba(255, 255, 255, 0.06);
+  --card-highlight: rgba(255, 255, 255, 0.06);
+  --spinner-track:  rgba(255, 255, 255, 0.12);
+  --skeleton-from:  rgba(30, 41, 59, 0.3);
+  --skeleton-to:    rgba(30, 41, 59, 0.5);
+  --selection-bg:   rgba(59, 130, 246, 0.3);
+  --selection-fg:   #fff;
+  --sidebar-bg:      rgba(8, 12, 24, 0.85);
+  --bg-subtle:       rgba(255, 255, 255, 0.02);
+  --bg-subtle-hover: rgba(255, 255, 255, 0.04);
+  --bg-subtle-active: rgba(255, 255, 255, 0.06);
+  --border-subtle:   rgba(255, 255, 255, 0.03);
+  --bg-code:         rgba(0, 0, 0, 0.2);
+  --ambient-opacity: 1;
+
   /* ── Shadows with color ─────────────────────────── */
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.4), 0 0 1px rgba(0,0,0,0.3);
   --shadow:    0 4px 16px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.25);
@@ -43,6 +62,7 @@
 
   /* ── Fonts ──────────────────────────────────────── */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-heading: 'DM Sans', 'Inter', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
 }
 
@@ -69,8 +89,20 @@ body::before {
     radial-gradient(ellipse 80% 60% at 50% -20%, rgba(59, 130, 246, 0.08), transparent 70%),
     radial-gradient(ellipse 60% 50% at 80% 50%, rgba(139, 92, 246, 0.04), transparent 60%),
     radial-gradient(ellipse 50% 40% at 20% 80%, rgba(6, 182, 212, 0.03), transparent 50%);
+  opacity: var(--ambient-opacity);
   pointer-events: none;
   z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url('/back.svg') center center / 180vmax no-repeat;
+  opacity: 0.009;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 10;
 }
 
 #root { position: relative; z-index: 1; }
@@ -86,6 +118,7 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
 
 /* ── Typography ────────────────────────────────────── */
+h1, h2, h3 { font-family: var(--font-heading); }
 .mono { font-family: var(--font-mono); font-size: 12px; }
 .text-1 { color: var(--text-1); }
 .text-2 { color: var(--text-2); }
@@ -147,7 +180,24 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
+@keyframes stagger-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-4px); }
+  40%      { transform: translateX(4px); }
+  60%      { transform: translateX(-3px); }
+  80%      { transform: translateX(2px); }
+}
+
 .fade-in { animation: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+.shake   { animation: shake 0.4s ease; }
+
+/* Micro-interaction: button press */
+.btn:active:not(:disabled) { transform: scale(0.97); }
 
 /* ── Form elements ─────────────────────────────────── */
 .form-group {
@@ -165,7 +215,7 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 }
 
 .form-input {
-  background: rgba(5, 9, 16, 0.6);
+  background: var(--bg-input);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-1);
@@ -179,7 +229,7 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 .form-input:focus {
   border-color: var(--blue);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15), 0 0 16px rgba(59, 130, 246, 0.08);
-  background: rgba(5, 9, 16, 0.8);
+  background: var(--bg-input-focus);
 }
 
 .form-input::placeholder { color: var(--text-3); }
@@ -221,13 +271,13 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 }
 
 .btn-ghost {
-  background: rgba(255,255,255,0.03);
+  background: var(--bg-ghost);
   color: var(--text-2);
   border: 1px solid var(--border);
   backdrop-filter: blur(8px);
 }
 .btn-ghost:not(:disabled):hover {
-  background: rgba(255,255,255,0.06);
+  background: var(--bg-ghost-hover);
   border-color: var(--border-light);
   color: var(--text-1);
   box-shadow: 0 0 12px rgba(255,255,255,0.03);
@@ -263,7 +313,7 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
   left: 20px;
   right: 20px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  background: linear-gradient(90deg, transparent, var(--card-highlight), transparent);
   pointer-events: none;
   border-radius: 1px;
 }
@@ -272,15 +322,43 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 .spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.12);
+  border: 2px solid var(--spinner-track);
   border-top-color: currentColor;
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
   flex-shrink: 0;
 }
 
+/* ── Skeleton loader ───────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, var(--skeleton-from) 25%, var(--skeleton-to) 50%, var(--skeleton-from) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-text {
+  height: 14px;
+  width: 80%;
+}
+
+.skeleton-heading {
+  height: 24px;
+  width: 40%;
+}
+
+.skeleton-card {
+  height: 120px;
+  width: 100%;
+}
+
+.skeleton-row {
+  height: 48px;
+  width: 100%;
+}
+
 /* ── Selection ─────────────────────────────────────── */
 ::selection {
-  background: rgba(59, 130, 246, 0.3);
-  color: #fff;
+  background: var(--selection-bg);
+  color: var(--selection-fg);
 }

@@ -1,12 +1,18 @@
 import { create } from 'zustand'
 import type { Alert, Endpoint, User } from '../types/api'
+import { fetchMe } from '../api/auth'
+
+type Locale = 'en' | 'ru'
+type Theme = 'dark' | 'light'
 
 interface AppState {
   // Auth
   accessToken: string | null
   user: User | null
+  authLoading: boolean
   setAuth: (token: string, user: User) => void
   clearAuth: () => void
+  initAuth: () => Promise<void>
 
   // Endpoints
   endpoints: Endpoint[]
@@ -28,14 +34,43 @@ interface AppState {
 
   // Active alerts count (for sidebar badge)
   activeAlertsCount: number
+
+  // UI preferences
+  locale: Locale
+  setLocale: (locale: Locale) => void
+  theme: Theme
+  setTheme: (theme: Theme) => void
+  sidebarCollapsed: boolean
+  setSidebarCollapsed: (collapsed: boolean) => void
 }
 
-export const useAppStore = create<AppState>((set) => ({
-  // Auth (временно — bypass авторизации)
-  accessToken: 'dev',
-  user: { id: '1', email: 'dev@local', role: 'admin', created_at: new Date().toISOString() },
-  setAuth: (token, user) => set({ accessToken: token, user }),
-  clearAuth: () => set({ accessToken: null, user: null }),
+export const useAppStore = create<AppState>((set, get) => ({
+  // Auth
+  accessToken: localStorage.getItem('token'),
+  user: null,
+  authLoading: true,
+  setAuth: (token, user) => {
+    localStorage.setItem('token', token)
+    set({ accessToken: token, user })
+  },
+  clearAuth: () => {
+    localStorage.removeItem('token')
+    set({ accessToken: null, user: null })
+  },
+  initAuth: async () => {
+    const token = get().accessToken
+    if (!token) {
+      set({ authLoading: false })
+      return
+    }
+    try {
+      const user = await fetchMe()
+      set({ user, authLoading: false })
+    } catch {
+      localStorage.removeItem('token')
+      set({ accessToken: null, user: null, authLoading: false })
+    }
+  },
 
   // Endpoints
   endpoints: [],
@@ -83,4 +118,22 @@ export const useAppStore = create<AppState>((set) => ({
     }),
 
   activeAlertsCount: 0,
+
+  // UI preferences
+  locale: (localStorage.getItem('locale') as Locale) || 'ru',
+  setLocale: (locale) => {
+    localStorage.setItem('locale', locale)
+    set({ locale })
+  },
+  theme: (localStorage.getItem('theme') as Theme) || 'dark',
+  setTheme: (theme) => {
+    localStorage.setItem('theme', theme)
+    document.documentElement.dataset.theme = theme
+    set({ theme })
+  },
+  sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
+  setSidebarCollapsed: (collapsed) => {
+    localStorage.setItem('sidebarCollapsed', String(collapsed))
+    set({ sidebarCollapsed: collapsed })
+  },
 }))

@@ -11,6 +11,7 @@ export interface Endpoint {
   timeout: number
   expected_status?: number
   latency_threshold?: number
+  follow_redirects: boolean
   enabled: boolean
   status: EndpointStatus
   uptime_24h: number
@@ -29,6 +30,7 @@ export interface EndpointCreate {
   timeout: number
   expected_status?: number
   latency_threshold?: number
+  follow_redirects: boolean
   enabled: boolean
 }
 
@@ -113,18 +115,40 @@ export interface User {
   id: string
   email: string
   role: UserRole
+  name?: string
+  avatar_url?: string
   created_at: string
-}
-
-export interface AuthResponse {
-  access_token: string
-  user: User
 }
 
 export interface TelegramSettings {
   bot_token: string
   chat_id: string
   configured: boolean
+}
+
+export interface WorstEndpoint {
+  id: string
+  name: string
+  url: string
+  status: EndpointStatus
+  uptime: number
+}
+
+export interface RecentIncident {
+  id: string
+  endpoint_id: string
+  endpoint_name: string
+  type: AlertType
+  status: AlertStatus
+  message: string
+  created_at: string
+  resolved_at?: string
+}
+
+export interface TimelineSegment {
+  start: string
+  end: string
+  status: EndpointStatus
 }
 
 // SSE event payloads

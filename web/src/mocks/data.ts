@@ -23,6 +23,7 @@ export const MOCK_ENDPOINTS: Endpoint[] = [
     timeout: 10,
     expected_status: 200,
     latency_threshold: 2000,
+    follow_redirects: false,
     enabled: true,
     status: 'up',
     uptime_24h: 99.8,
@@ -39,6 +40,7 @@ export const MOCK_ENDPOINTS: Endpoint[] = [
     timeout: 5,
     expected_status: 200,
     latency_threshold: 500,
+    follow_redirects: false,
     enabled: true,
     status: 'slow',
     uptime_24h: 97.4,
@@ -55,6 +57,7 @@ export const MOCK_ENDPOINTS: Endpoint[] = [
     timeout: 15,
     expected_status: 200,
     latency_threshold: 3000,
+    follow_redirects: false,
     enabled: true,
     status: 'down',
     uptime_24h: 81.2,
@@ -70,6 +73,7 @@ export const MOCK_ENDPOINTS: Endpoint[] = [
     check_interval: 300,
     timeout: 10,
     latency_threshold: 800,
+    follow_redirects: false,
     enabled: true,
     status: 'up',
     uptime_24h: 100,
@@ -85,6 +89,7 @@ export const MOCK_ENDPOINTS: Endpoint[] = [
     check_interval: 60,
     timeout: 10,
     latency_threshold: 1000,
+    follow_redirects: false,
     enabled: true,
     status: 'up',
     uptime_24h: 98.9,
@@ -268,8 +273,8 @@ export const MOCK_DASHBOARD_UPTIME: DailyUptime[] = genUptime(7, 95.5)
 // ─── Settings ─────────────────────────────────────────────────────────────────
 
 export const MOCK_USERS: User[] = [
-  { id: '1', email: 'admin@example.com', role: 'admin', created_at: '2025-01-01T00:00:00Z' },
-  { id: '2', email: 'viewer@example.com', role: 'viewer', created_at: '2025-02-01T00:00:00Z' },
+  { id: '1', email: 'admin@example.com', role: 'admin', name: 'Admin User', created_at: '2025-01-01T00:00:00Z' },
+  { id: '2', email: 'viewer@example.com', role: 'viewer', name: 'Viewer User', created_at: '2025-02-01T00:00:00Z' },
 ]
 
 export const MOCK_TELEGRAM: TelegramSettings = {

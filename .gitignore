@@ -1,0 +1,28 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Go
+/tmp
+*.exe
+*.test
+*.out
+
+# Node
+node_modules/
+web/node_modules/
+
+# Build artifacts
+web/dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

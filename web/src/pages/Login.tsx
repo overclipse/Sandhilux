@@ -1,91 +1,190 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { login } from '../api/auth'
 import { useAppStore } from '../store'
+import { authStatus, login, setup, register, decodeToken } from '../api/auth'
+import { useT } from '../i18n'
 import logoSrc from '../assets/logo.svg'
 import styles from './Login.module.css'
 
-export function Login() {
-  const emailRef = useRef<HTMLInputElement>(null)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const setAuth = useAppStore((s) => s.setAuth)
-  const navigate = useNavigate()
+type Mode = 'login' | 'setup' | 'register'
 
-  useEffect(() => { emailRef.current?.focus() }, [])
+export function Login() {
+  const t = useT()
+  const navigate = useNavigate()
+  const setAuth = useAppStore((s) => s.setAuth)
+
+  const [mode, setMode] = useState<Mode | null>(null) // null = probing
+  const [connectFailed, setConnectFailed] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
+
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    setMode(null)
+    setConnectFailed(false)
+
+    const MAX_ATTEMPTS = 20
+    const DELAY_MS = 2000
+
+    const run = async () => {
+      for (let i = 0; i < MAX_ATTEMPTS; i++) {
+        if (cancelled) return
+        try {
+          const { setup_required } = await authStatus()
+          if (!cancelled) setMode(setup_required ? 'setup' : 'login')
+          return
+        } catch {
+          if (i < MAX_ATTEMPTS - 1 && !cancelled) {
+            await new Promise(r => setTimeout(r, DELAY_MS))
+          }
+        }
+      }
+      if (!cancelled) setConnectFailed(true)
+    }
+
+    run()
+    return () => { cancelled = true }
+  }, [retryKey])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      const res = await login(email, password)
-      setAuth(res.access_token, res.user)
+      let token: string
+      if (mode === 'setup') {
+        token = (await setup(username, password, name || undefined)).token
+      } else if (mode === 'register') {
+        token = (await register(username, password, name || undefined)).token
+      } else {
+        token = (await login(username, password)).token
+      }
+      const user = decodeToken(token)
+      if (!user) throw new Error('invalid token')
+      setAuth(token, user)
       navigate('/', { replace: true })
-    } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } }).response?.status
-      setError(status === 401 ? 'Invalid email or password' : 'Something went wrong. Try again.')
+    } catch (err: any) {
+      const msg = err?.response?.data?.error
+      setError(msg || t('login.invalidCredentials'))
     } finally {
       setLoading(false)
     }
   }
 
+  // ── Connecting / error state ──────────────────────────────
+  if (mode === null) {
+    return (
+      <div className={styles.card}>
+        <div className={styles.header}>
+          <img src={logoSrc} className={styles.logoIcon} alt="Sandhilux" />
+          <h1 className={styles.title}>Sandhilux</h1>
+        </div>
+        {connectFailed ? (
+          <div className={styles.connectFailed}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <span>{t('login.connectFailed')}</span>
+            <button className="btn btn-ghost btn-sm" onClick={() => setRetryKey(k => k + 1)}>
+              {t('login.retry')}
+            </button>
+          </div>
+        ) : (
+          <div className={styles.connecting}>
+            <span className="spinner" />
+            <span>{t('login.connecting')}</span>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  const isSetup = mode === 'setup'
+  const isRegister = mode === 'register'
+
+  // ── Login / Setup / Register form ─────────────────────────
   return (
     <div className={styles.card}>
       <div className={styles.header}>
         <img src={logoSrc} className={styles.logoIcon} alt="Sandhilux" />
         <h1 className={styles.title}>Sandhilux</h1>
-        <p className={styles.subtitle}>Sign in to your account</p>
+        <p className={styles.subtitle}>
+          {isSetup
+            ? t('login.setupDesc')
+            : isRegister
+            ? t('login.registerDesc')
+            : t('login.subtitle')}
+        </p>
       </div>
 
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label className="form-label">Email</label>
-          <input
-            ref={emailRef}
-            className="form-input"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            required
-            autoComplete="email"
-            onKeyDown={(e) => e.key === 'Enter' && handleSubmit(e as unknown as React.FormEvent)}
-          />
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Password</label>
-          <div className={styles.passwordWrap}>
+      <form onSubmit={handleSubmit} className={styles.form}>
+        {(isSetup || isRegister) && (
+          <div className="form-group">
+            <label className="form-label">{t('login.name')}</label>
             <input
               className="form-input"
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              autoComplete="current-password"
-              onKeyDown={(e) => e.key === 'Enter' && handleSubmit(e as unknown as React.FormEvent)}
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t('login.namePlaceholder')}
+              autoComplete="name"
             />
-            <button
-              type="button"
-              className={styles.eyeBtn}
-              onClick={() => setShowPassword((v) => !v)}
-              tabIndex={-1}
-            >
-              {showPassword ? '🙈' : '👁'}
-            </button>
           </div>
+        )}
+        <div className="form-group">
+          <label className="form-label">{t('login.username')}</label>
+          <input
+            className="form-input"
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder={isSetup || isRegister ? 'admin' : 'admin'}
+            required
+            autoComplete="username"
+            autoFocus
+          />
+        </div>
+        <div className="form-group">
+          <label className="form-label">{t('login.password')}</label>
+          <input
+            className="form-input"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={isSetup || isRegister ? t('login.passwordMinHint') : '••••••••'}
+            required
+            autoComplete={isSetup || isRegister ? 'new-password' : 'current-password'}
+          />
         </div>
 
         {error && <p className="form-error">{error}</p>}
 
-        <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%', justifyContent: 'center' }}>
-          {loading ? <span className="spinner" /> : 'Sign in'}
+        <button type="submit" className="btn btn-primary" disabled={loading} style={{ marginTop: 4 }}>
+          {loading ? <span className="spinner" /> : (
+            isSetup ? t('login.createAdmin') :
+            isRegister ? t('login.registerSubmit') :
+            t('login.signIn')
+          )}
         </button>
+
+        {/* Toggle register / login — only when setup is already done */}
+        {!isSetup && (
+          <p className={styles.switchMode}>
+            {isRegister ? t('login.haveAccount') : t('login.noAccount')}{' '}
+            <button
+              type="button"
+              className={styles.switchLink}
+              onClick={() => { setMode(isRegister ? 'login' : 'register'); setError('') }}
+            >
+              {isRegister ? t('login.signIn') : t('login.register')}
+            </button>
+          </p>
+        )}
       </form>
     </div>
   )

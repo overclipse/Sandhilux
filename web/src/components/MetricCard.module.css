@@ -1,5 +1,5 @@
 .card {
-  padding: 24px 26px;
+  padding: 24px 26px 20px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -13,7 +13,7 @@
   box-shadow: var(--shadow-lg), var(--shadow-glow-blue);
 }
 
-/* top gradient accent line */
+/* default top gradient accent line */
 .card::before {
   content: '';
   position: absolute;
@@ -25,15 +25,16 @@
   opacity: 0.6;
 }
 
-/* ambient corner glow */
-.card .glow {
+/* status-colored border-top (overrides ::before) */
+.statusBorder {
   position: absolute;
-  top: -20px;
-  right: -20px;
-  width: 80px;
-  height: 80px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.08), transparent 70%);
-  pointer-events: none;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent-color);
+  box-shadow: 0 0 12px var(--accent-color);
+  z-index: 1;
 }
 
 .label {
@@ -53,6 +54,7 @@
   font-variant-numeric: tabular-nums;
 }
 
+.value.green  { color: var(--green); text-shadow: 0 0 20px rgba(34, 197, 94, 0.2); }
 .value.red    { color: var(--red); text-shadow: 0 0 20px rgba(239, 68, 68, 0.2); }
 .value.yellow { color: var(--yellow); text-shadow: 0 0 20px rgba(234, 179, 8, 0.2); }
 
@@ -77,4 +79,10 @@
   color: var(--red);
   opacity: 1;
   text-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+}
+
+.sparkline {
+  width: 100%;
+  height: 28px;
+  margin-top: auto;
 }

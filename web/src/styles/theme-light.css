@@ -1,0 +1,103 @@
+/* ── Light theme ──────────────────────────────────── */
+[data-theme="light"] {
+  --bg-base:    #f4f6f9;
+  --bg-surface: rgba(255, 255, 255, 0.82);
+  --bg-layer:   rgba(255, 255, 255, 0.65);
+  --bg-hover:   rgba(241, 245, 249, 0.85);
+  --bg-elevated: rgba(255, 255, 255, 0.92);
+  --border:     rgba(203, 213, 225, 0.65);
+  --border-light: rgba(203, 213, 225, 0.85);
+  --border-glow: rgba(59, 130, 246, 0.12);
+
+  --text-1: #0f172a;
+  --text-2: #475569;
+  --text-3: #94a3b8;
+
+  --green:  #16a34a;
+  --red:    #dc2626;
+  --yellow: #ca8a04;
+  --blue:   #2563eb;
+  --purple: #7c3aed;
+  --cyan:   #0891b2;
+
+  --green-dim:  rgba(22, 163, 74, 0.10);
+  --red-dim:    rgba(220, 38, 38, 0.08);
+  --yellow-dim: rgba(202, 138, 4, 0.08);
+  --blue-dim:   rgba(37, 99, 235, 0.08);
+  --purple-dim: rgba(124, 58, 237, 0.08);
+
+  /* Component-level */
+  --bg-input:       rgba(255, 255, 255, 0.8);
+  --bg-input-focus: rgba(255, 255, 255, 1);
+  --bg-ghost:       rgba(15, 23, 42, 0.04);
+  --bg-ghost-hover: rgba(15, 23, 42, 0.08);
+  --card-highlight: rgba(0, 0, 0, 0.03);
+  --spinner-track:  rgba(15, 23, 42, 0.1);
+  --skeleton-from:  rgba(203, 213, 225, 0.3);
+  --skeleton-to:    rgba(203, 213, 225, 0.5);
+  --selection-bg:   rgba(37, 99, 235, 0.2);
+  --selection-fg:   #0f172a;
+  --sidebar-bg:      rgba(255, 255, 255, 0.88);
+  --bg-subtle:       rgba(15, 23, 42, 0.02);
+  --bg-subtle-hover: rgba(15, 23, 42, 0.04);
+  --bg-subtle-active: rgba(15, 23, 42, 0.06);
+  --border-subtle:   rgba(15, 23, 42, 0.06);
+  --bg-code:         rgba(15, 23, 42, 0.05);
+  --ambient-opacity: 0.5;
+
+  /* Shadows — lighter */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.04);
+  --shadow:    0 4px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-lg: 0 12px 48px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+  --shadow-glow-blue: 0 0 20px rgba(37, 99, 235, 0.08);
+  --shadow-glow-green: 0 0 20px rgba(22, 163, 74, 0.08);
+  --shadow-glow-red: 0 0 20px rgba(220, 38, 38, 0.08);
+}
+
+/* Override ambient gradients for light */
+[data-theme="light"] body::before {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -20%, rgba(59, 130, 246, 0.06), transparent 70%),
+    radial-gradient(ellipse 60% 50% at 80% 50%, rgba(139, 92, 246, 0.03), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 20% 80%, rgba(6, 182, 212, 0.03), transparent 50%);
+}
+
+/* Hide noise overlay in light theme */
+[data-theme="light"] body::after {
+  display: none;
+}
+
+/* Badges — slightly adjusted for light */
+[data-theme="light"] .badge-up   { box-shadow: none; }
+[data-theme="light"] .badge-down { box-shadow: none; }
+[data-theme="light"] .badge-slow { box-shadow: none; }
+
+/* Card edge — invert highlight */
+[data-theme="light"] .card::after {
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.04), transparent);
+}
+
+/* Scrollbar */
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.4); }
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.5); }
+
+/* Primary button — keep vivid but remove inner glow */
+[data-theme="light"] .btn-primary {
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+}
+[data-theme="light"] .btn-primary:not(:disabled):hover {
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.25);
+}
+
+/* Ghost button border in light */
+[data-theme="light"] .btn-ghost:not(:disabled):hover {
+  box-shadow: 0 0 12px rgba(0,0,0,0.03);
+}
+
+/* Form focus ring */
+[data-theme="light"] .form-input:focus {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12), 0 0 16px rgba(37, 99, 235, 0.05);
+}
+[data-theme="light"] .form-input.error:focus {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12), 0 0 16px rgba(220, 38, 38, 0.05);
+}

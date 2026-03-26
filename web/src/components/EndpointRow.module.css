@@ -2,6 +2,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
+  animation: stagger-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 40ms);
 }
 
 .row:hover td {
@@ -23,6 +25,34 @@
 
 .row:hover::after { opacity: 0.5; }
 
+/* DOWN row highlighting */
+.rowDown td {
+  background: rgba(239, 68, 68, 0.05);
+}
+.rowDown:hover td {
+  background: rgba(239, 68, 68, 0.08);
+}
+.rowDown::after {
+  background: var(--red);
+  opacity: 0.6;
+}
+.rowDown:hover::after {
+  opacity: 1;
+}
+
+/* Disabled/paused row */
+.rowDisabled td {
+  opacity: 0.5;
+}
+.rowDisabled:hover td {
+  opacity: 0.75;
+  background: rgba(234, 179, 8, 0.03);
+}
+.rowDisabled::after {
+  background: var(--yellow);
+  opacity: 0.3;
+}
+
 .dotCell {
   width: 48px;
   text-align: center;
@@ -36,6 +66,9 @@
 }
 
 .name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 600;
   color: var(--text-1);
   font-size: 13px;
@@ -44,6 +77,19 @@
 }
 
 .row:hover .name { color: var(--blue); }
+.rowDown .name { color: var(--red); }
+.rowDown:hover .name { color: var(--red); }
+
+.pausedBadge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--yellow-dim);
+  color: var(--yellow);
+  line-height: 1.4;
+}
 
 .url {
   font-size: 11px;
@@ -59,4 +105,10 @@
   color: var(--text-3);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
+}
+
+.actionsCell {
+  width: 44px;
+  text-align: center;
+  padding: 0 8px !important;
 }

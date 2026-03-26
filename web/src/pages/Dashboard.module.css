@@ -12,6 +12,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  flex-wrap: wrap;
 }
 
 .pageTitle {
@@ -25,6 +26,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .onlinePill {
@@ -54,16 +56,17 @@
   gap: 14px;
 }
 
-@media (max-width: 900px) {
-  .cards { grid-template-columns: repeat(2, 1fr); }
-}
+/* Stagger animation for card children */
+.cards > :nth-child(1) { animation: stagger-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 0ms; }
+.cards > :nth-child(2) { animation: stagger-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 60ms; }
+.cards > :nth-child(3) { animation: stagger-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 120ms; }
+.cards > :nth-child(4) { animation: stagger-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 180ms; }
 
 .tableCard {
   overflow: hidden;
   position: relative;
 }
 
-/* ambient glow behind table */
 .tableCard::before {
   content: '';
   position: absolute;
@@ -90,6 +93,22 @@
   color: var(--text-3);
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+.tableCount {
+  font-size: 11px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.chartStat {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.chartStat strong {
+  color: var(--text-2);
+  font-weight: 600;
 }
 
 .tableWrap { overflow-x: auto; }
@@ -128,6 +147,181 @@
   gap: 14px;
 }
 
-@media (max-width: 800px) {
+/* ── Period selector ──────────────────────────────── */
+.periodGroup {
+  display: flex;
+  background: var(--bg-input);
+  border-radius: var(--radius-md);
+  padding: 2px;
+  gap: 1px;
+}
+
+.periodBtn {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: none;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.periodBtn:hover { color: var(--text-1); }
+
+.periodActive {
+  background: var(--bg-surface);
+  color: var(--text-1);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Status dots ─────────────────────────────────── */
+.statusDots {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 8px;
+}
+
+.dotWrap {
+  display: inline-flex;
+  cursor: default;
+}
+
+/* ── Worst endpoints list ────────────────────────── */
+.worstList, .incidentList {
+  padding: 8px 0;
+}
+
+.worstItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-size: 13px;
+}
+
+.worstItem:hover { background: var(--bg-subtle); }
+
+.worstName {
+  flex: 1;
+  color: var(--text-1);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.worstUptime {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.worstEmpty {
+  padding: 24px 20px;
+  text-align: center;
+  color: var(--text-3);
+  font-size: 12px;
+}
+
+/* ── Incidents feed ──────────────────────────────── */
+.incidentItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  font-size: 12px;
+}
+
+.incidentName {
+  flex: 1;
+  color: var(--text-1);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.incidentDuration {
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.incidentTime {
+  color: var(--text-3);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* Empty states */
+.chartEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 240px;
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+.chartEmptySub {
+  font-size: 11px;
+  color: var(--text-3);
+  opacity: 0.6;
+}
+
+.emptyRow {
+  text-align: center;
+  padding: 48px 16px !important;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+.emptyIcon {
+  font-size: 28px;
+  opacity: 0.5;
+}
+
+/* ── 1280px ──────────────────────────────────────────── */
+@media (max-width: 1280px) {
+  .page { padding: 24px; }
+}
+
+/* ── 1024px ──────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .page { padding: 20px 18px; gap: 18px; }
+  .cards { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── 768px ───────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .page { padding: 16px; gap: 14px; }
   .charts { grid-template-columns: 1fr; }
+  .pageTitle { font-size: 18px; }
+}
+
+/* ── 640px ───────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .page { padding: 12px; gap: 12px; }
+  .topbar { gap: 8px; }
+  .topbarRight { gap: 6px; }
+  .cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .onlinePill { padding: 4px 10px; font-size: 11px; }
+}
+
+/* ── 400px ───────────────────────────────────────────── */
+@media (max-width: 400px) {
+  .cards { grid-template-columns: 1fr; }
 }

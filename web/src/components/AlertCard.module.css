@@ -70,9 +70,9 @@
   color: var(--text-2);
   font-family: var(--font-mono);
   padding: 6px 10px;
-  background: rgba(0,0,0,0.2);
+  background: var(--bg-code);
   border-radius: var(--radius-xs);
-  border: 1px solid rgba(255,255,255,0.03);
+  border: 1px solid var(--border-subtle);
 }
 
 .meta {
@@ -81,6 +81,16 @@
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
+}
+
+.durationPill {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: var(--bg-subtle);
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
 }
 
 .telegramPill,
