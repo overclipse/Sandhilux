@@ -1,7 +1,11 @@
 import client from './client'
-import type { TelegramSettings, User } from '../types/api'
+import type { TelegramSettings, User, VersionInfo } from '../types/api'
 
 export const settingsApi = {
+  getVersion: () =>
+    client.get<VersionInfo>('/api/version').then((r) => r.data),
+
+
   getUsers: () =>
     client.get<User[]>('/api/settings/users').then((r) => r.data),
 

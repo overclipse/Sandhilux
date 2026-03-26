@@ -146,6 +146,7 @@ All routes live under `/api`. Protected routes require `Authorization: Bearer <t
 | `GET` | `/api/alerts/` | user | Alert list |
 | `PUT` | `/api/alerts/{id}/resolve` | user | Resolve an alert |
 | `GET` | `/api/events` | user | SSE stream — live check events |
+| `GET` | `/api/version` | user | App version, uptime, Go runtime |
 | `GET / PUT / DELETE` | `/api/settings/users` | admin | User management |
 | `GET / PUT` | `/api/settings/telegram` | admin | Telegram bot config |
 | `POST` | `/api/settings/telegram/test` | admin | Send a test notification |

@@ -353,47 +353,74 @@ action_deploy() {
   # ── git pull (update only) ────────────────────────────────
   if $update; then
     step "Pulling latest code"
-    git pull --ff-only && ok "Up to date" || warn "git pull failed — using current code"
-  fi
+    local before_commit
+    before_commit=$(git rev-parse HEAD 2>/dev/null || echo "")
 
-  # ── port selection ────────────────────────────────────────
-  step "Scanning ports"
-  start_spinner "scanning…"
-  scan_ports
-  stop_spinner
+    if git pull --ff-only 2>&1; then
+      local after_commit
+      after_commit=$(git rev-parse HEAD 2>/dev/null || echo "")
 
-  local auto
-  auto=$(first_free_port)
-
-  local items=()
-  items+=("${BOLD}Auto${RST}  →  ${CYAN}${BOLD}:${auto}${RST}  ${DIM}(recommended)${RST}")
-  for p in "${CANDIDATES[@]}"; do
-    if [[ "$(port_status "$p")" == "free" ]]; then
-      items+=("${p}   ${GREEN}free${RST}")
+      if [[ -n "$before_commit" && "$before_commit" != "$after_commit" ]]; then
+        ok "Updated  ${DIM}${before_commit:0:7} → ${after_commit:0:7}${RST}"
+        blank
+        echo -e "  ${BOLD}Changelog:${RST}"
+        git log --oneline "${before_commit}..HEAD" 2>/dev/null \
+          | while IFS= read -r line; do
+              echo -e "  ${DIM}·  ${RST}${line}"
+            done
+        blank
+      else
+        ok "Already up to date"
+      fi
     else
-      items+=("${DIM}${p}   busy${RST}")
+      warn "git pull failed — building from current code"
     fi
-  done
-  items+=("${BOLD}⌨   Enter custom…${RST}")
-
-  blank
-  local pidx=0
-  arrow_menu pidx \
-    "  ${BOLD}Select port to expose Sandhilux on:${RST}" \
-    "${items[@]}"
-
-  local last=$(( ${#items[@]} - 1 ))
-  if   [[ $pidx -eq 0 ]];      then port="$auto"
-  elif [[ $pidx -eq $last ]];  then
-    blank
-    printf "  ${BOLD}Port number:${RST} "
-    read -r port
-    is_port_free "$port" || warn "Port $port appears busy — continuing anyway"
-  else
-    port="${CANDIDATES[$((pidx-1))]}"
   fi
 
-  ok "Port: ${BOLD}${CYAN}${port}${RST}"
+  # ── port selection — skip if updating with existing .env ──
+  if $update && [[ -f .env ]]; then
+    port=$(grep "^PORT=" .env 2>/dev/null | cut -d= -f2 || echo "")
+    port="${port:-8080}"
+    ok "Port: ${BOLD}${CYAN}${port}${RST}  ${DIM}(from .env)${RST}"
+  else
+    step "Scanning ports"
+    start_spinner "scanning…"
+    scan_ports
+    stop_spinner
+
+    local auto
+    auto=$(first_free_port)
+
+    local items=()
+    items+=("${BOLD}Auto${RST}  →  ${CYAN}${BOLD}:${auto}${RST}  ${DIM}(recommended)${RST}")
+    for p in "${CANDIDATES[@]}"; do
+      if [[ "$(port_status "$p")" == "free" ]]; then
+        items+=("${p}   ${GREEN}free${RST}")
+      else
+        items+=("${DIM}${p}   busy${RST}")
+      fi
+    done
+    items+=("${BOLD}⌨   Enter custom…${RST}")
+
+    blank
+    local pidx=0
+    arrow_menu pidx \
+      "  ${BOLD}Select port to expose Sandhilux on:${RST}" \
+      "${items[@]}"
+
+    local last=$(( ${#items[@]} - 1 ))
+    if   [[ $pidx -eq 0 ]];      then port="$auto"
+    elif [[ $pidx -eq $last ]];  then
+      blank
+      printf "  ${BOLD}Port number:${RST} "
+      read -r port
+      is_port_free "$port" || warn "Port $port appears busy — continuing anyway"
+    else
+      port="${CANDIDATES[$((pidx-1))]}"
+    fi
+
+    ok "Port: ${BOLD}${CYAN}${port}${RST}"
+  fi
 
   # ── env ───────────────────────────────────────────────────
   step "Configuring environment"
@@ -526,6 +553,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$ROOT"
 
+# ── Version ───────────────────────────────────────────────────────────────────
+APP_VERSION="$(cat VERSION 2>/dev/null || echo 'dev')"
+APP_COMMIT="$(git rev-parse --short HEAD 2>/dev/null || echo '')"
+APP_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo '')"
+
 clear
 
 # ── Banner ────────────────────────────────────────────────────────────────────
@@ -536,6 +568,8 @@ echo -e "  ${BOLD}${BLUE}║   ${CYAN}▲ ${BOLD}S A N D H I L U X${BLUE}       
 echo -e "  ${BOLD}${BLUE}║   ${DIM}Self-hosted uptime monitoring & alerts${BLUE}    ║${RST}"
 echo -e "  ${BOLD}${BLUE}║                                               ║${RST}"
 echo -e "  ${BOLD}${BLUE}╚═══════════════════════════════════════════════╝${RST}"
+blank
+echo -e "  ${DIM}Version  ${RST}${BOLD}v${APP_VERSION}${RST}${DIM}  ·  ${APP_COMMIT}  ·  ${APP_BRANCH}${RST}"
 blank
 
 # ── Ensure Docker is available (install if needed on Linux) ───────────────────

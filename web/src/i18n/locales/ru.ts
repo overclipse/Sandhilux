@@ -174,6 +174,14 @@ const ru: Record<string, string> = {
   'settings.viewer': 'Зритель',
   'settings.remove': 'Удалить',
 
+  // System
+  'settings.system': 'Система',
+  'settings.version': 'Версия',
+  'settings.uptime': 'Аптайм',
+  'settings.runtime': 'Go runtime',
+  'settings.buildTime': 'Собрано',
+  'settings.updateHint': 'Для обновления выполните:',
+
   // Login
   'login.title': 'Sandhilux',
   'login.subtitle': 'Мониторинг доступности и алерты',

@@ -184,3 +184,12 @@ export type SSEMessage =
   | SSEAlertCreated
   | SSEAlertResolved
   | SSEEndpointStatus
+
+
+export interface VersionInfo {
+  version: string
+  commit?: string
+  build_time: string
+  go_version: string
+  uptime: string
+}

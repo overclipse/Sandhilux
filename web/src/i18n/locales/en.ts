@@ -174,6 +174,14 @@ const en: Record<string, string> = {
   'settings.viewer': 'Viewer',
   'settings.remove': 'Remove',
 
+  // System
+  'settings.system': 'System',
+  'settings.version': 'Version',
+  'settings.uptime': 'Uptime',
+  'settings.runtime': 'Runtime',
+  'settings.buildTime': 'Built',
+  'settings.updateHint': 'To update, run:',
+
   // Login
   'login.title': 'Sandhilux',
   'login.subtitle': 'Uptime monitoring & alerting',

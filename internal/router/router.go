@@ -87,6 +87,9 @@ func New(h *handler.Handler) http.Handler {
 				r.Put("/{id}/resolve", h.ResolveAlert)
 			})
 
+			// Version info — any authenticated user
+			r.Get("/version", h.GetVersion)
+
 			// Settings — admin only
 			r.Route("/settings", func(r chi.Router) {
 				r.Use(handler.AdminOnly)

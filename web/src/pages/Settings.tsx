@@ -8,6 +8,10 @@ import { ErrorBanner } from '../components/ErrorBanner'
 import { getErrorMessage } from '../utils/error'
 import styles from './Settings.module.css'
 
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
+}
+
 export function Settings() {
   const t = useT()
   const user = useAppStore((s) => s.user)
@@ -16,6 +20,12 @@ export function Settings() {
   const [botToken, setBotToken] = useState('')
   const [chatId, setChatId] = useState('')
   const [telegramMsg, setTelegramMsg] = useState('')
+
+  const { data: version } = useQuery({
+    queryKey: ['version'],
+    queryFn: () => settingsApi.getVersion(),
+    refetchInterval: 30_000,
+  })
 
   const { data: users = [], refetch: refetchUsers, error: usersError } = useQuery({
     queryKey: ['users'],
@@ -177,6 +187,42 @@ export function Settings() {
           </table>
         </div>
       </section>
+      {/* System */}
+      <section className={`card ${styles.section}`}>
+        <h2 className={styles.sectionTitle}>{t('settings.system')}</h2>
+        <div className={styles.sectionBody}>
+          {version ? (
+            <div className={styles.versionGrid}>
+              <div className={styles.versionRow}>
+                <span className={styles.versionLabel}>{t('settings.version')}</span>
+                <span className={styles.versionValue}>
+                  <span className={styles.versionBadge}>v{version.version}</span>
+                  {version.commit && <span className={styles.versionCommit}>{version.commit}</span>}
+                </span>
+              </div>
+              <div className={styles.versionRow}>
+                <span className={styles.versionLabel}>{t('settings.uptime')}</span>
+                <span className={styles.versionValue}>{version.uptime}</span>
+              </div>
+              <div className={styles.versionRow}>
+                <span className={styles.versionLabel}>{t('settings.runtime')}</span>
+                <span className={styles.versionValue}>{version.go_version}</span>
+              </div>
+              <div className={styles.versionRow}>
+                <span className={styles.versionLabel}>{t('settings.buildTime')}</span>
+                <span className={styles.versionValue}>{fmtDate(version.build_time)}</span>
+              </div>
+            </div>
+          ) : (
+            <span className={styles.versionValue} style={{ color: 'var(--text-3)' }}>—</span>
+          )}
+          <div className={styles.versionHint}>
+            {t('settings.updateHint')}
+            <code className={styles.updateCmd}>bash scripts/deploy.sh</code>
+          </div>
+        </div>
+      </section>
+
     </div>
   )
 }
