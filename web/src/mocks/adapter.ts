@@ -68,6 +68,14 @@ export const mockAdapter: AxiosAdapter = (config) => {
   // Metrics overview
   if (url.includes('/api/metrics/overview')) return ok(MOCK_OVERVIEW)
 
+  // Dashboard: worst endpoints and incidents (must be before generic pattern)
+  if (url.includes('/api/metrics/worst')) return ok(
+    MOCK_ENDPOINTS
+      .map((e) => ({ id: e.id, name: e.name, url: e.url, status: e.status, uptime: e.uptime_24h }))
+      .sort((a, b) => a.uptime - b.uptime)
+  )
+  if (url.includes('/api/metrics/incidents')) return ok(MOCK_ALERTS)
+
   // Latency per endpoint
   if (/\/api\/metrics\/(.+)\/uptime/.test(url)) {
     const id = url.match(/\/api\/metrics\/(.+)\/uptime/)![1]

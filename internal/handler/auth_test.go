@@ -4,11 +4,17 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
+
+func TestMain(m *testing.M) {
+	os.Setenv("JWT_SECRET", "test-secret-for-unit-tests")
+	os.Exit(m.Run())
+}
 
 // ── JWT unit tests ─────────────────────────────────────────────────────────
 

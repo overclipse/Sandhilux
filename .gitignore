@@ -20,6 +20,9 @@ web/node_modules/
 # Build artifacts
 web/dist/
 
+# Local dev / mock (not for production)
+web/test/
+
 # IDE
 .idea/
 .vscode/

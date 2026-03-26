@@ -169,6 +169,107 @@ func TestRun_StopsOnContextCancel(t *testing.T) {
 	}
 }
 
+// ── triggerAlerts: счётчик падений ───────────────────────────
+
+func TestTriggerAlerts_FailCountIncrementsOnDown(t *testing.T) {
+	c := newChecker()
+	ep := Endpoint{ID: "ep-1", Name: "svc"}
+	down := Result{Status: "down", IsUp: false}
+
+	c.triggerAlerts(context.Background(), ep, down, 0)
+	c.triggerAlerts(context.Background(), ep, down, 0)
+	c.triggerAlerts(context.Background(), ep, down, 0)
+
+	v, ok := c.failCounts.Load(ep.ID)
+	if !ok {
+		t.Fatal("failCount not found after 3 down results")
+	}
+	if v.(int) != 3 {
+		t.Errorf("expected failCount=3, got %d", v.(int))
+	}
+}
+
+func TestTriggerAlerts_FailCountResetsOnRecovery(t *testing.T) {
+	c := newChecker()
+	ep := Endpoint{ID: "ep-2", Name: "svc"}
+	down := Result{Status: "down", IsUp: false}
+	up := Result{Status: "up", IsUp: true}
+
+	// 3 failures...
+	c.triggerAlerts(context.Background(), ep, down, 0)
+	c.triggerAlerts(context.Background(), ep, down, 0)
+	c.triggerAlerts(context.Background(), ep, down, 0)
+
+	// ...then recovery
+	c.triggerAlerts(context.Background(), ep, up, 0)
+
+	_, ok := c.failCounts.Load(ep.ID)
+	if ok {
+		t.Error("failCount should be deleted after recovery")
+	}
+}
+
+func TestTriggerAlerts_FailCountIndependentPerEndpoint(t *testing.T) {
+	c := newChecker()
+	ep1 := Endpoint{ID: "ep-1"}
+	ep2 := Endpoint{ID: "ep-2"}
+	down := Result{Status: "down", IsUp: false}
+
+	c.triggerAlerts(context.Background(), ep1, down, 0)
+	c.triggerAlerts(context.Background(), ep1, down, 0)
+	c.triggerAlerts(context.Background(), ep2, down, 0)
+
+	v1, _ := c.failCounts.Load(ep1.ID)
+	v2, _ := c.failCounts.Load(ep2.ID)
+
+	if v1.(int) != 2 {
+		t.Errorf("ep1: expected 2, got %d", v1.(int))
+	}
+	if v2.(int) != 1 {
+		t.Errorf("ep2: expected 1, got %d", v2.(int))
+	}
+}
+
+func TestTriggerAlerts_RecoveryDoesNotAffectOtherEndpoint(t *testing.T) {
+	c := newChecker()
+	ep1 := Endpoint{ID: "ep-1"}
+	ep2 := Endpoint{ID: "ep-2"}
+	down := Result{Status: "down", IsUp: false}
+	up := Result{Status: "up", IsUp: true}
+
+	c.triggerAlerts(context.Background(), ep1, down, 0)
+	c.triggerAlerts(context.Background(), ep2, down, 0)
+	c.triggerAlerts(context.Background(), ep2, down, 0)
+
+	// Only ep1 recovers
+	c.triggerAlerts(context.Background(), ep1, up, 0)
+
+	_, ok1 := c.failCounts.Load(ep1.ID)
+	v2, ok2 := c.failCounts.Load(ep2.ID)
+
+	if ok1 {
+		t.Error("ep1 failCount should be deleted after recovery")
+	}
+	if !ok2 || v2.(int) != 2 {
+		t.Errorf("ep2 should still have failCount=2, got %v (ok=%v)", v2, ok2)
+	}
+}
+
+func TestTriggerAlerts_UpAfterUpNoEntry(t *testing.T) {
+	c := newChecker()
+	ep := Endpoint{ID: "ep-1"}
+	up := Result{Status: "up", IsUp: true}
+
+	// Should not panic and should not create entry
+	c.triggerAlerts(context.Background(), ep, up, 50)
+	c.triggerAlerts(context.Background(), ep, up, 50)
+
+	_, ok := c.failCounts.Load(ep.ID)
+	if ok {
+		t.Error("no failCount entry expected when always up")
+	}
+}
+
 // ── saveResult: CheckedAt формат ─────────────────────────────
 
 func TestSaveResult_CheckedAtIsRFC3339(t *testing.T) {

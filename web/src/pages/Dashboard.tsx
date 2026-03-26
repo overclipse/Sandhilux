@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Refresh01Icon, Add01Icon } from "@hugeicons/core-free-icons";
 import { metricsApi } from "../api/metrics";
 import type { DashboardPeriod } from "../api/metrics";
 import { endpointsApi } from "../api/endpoints";
@@ -28,14 +30,51 @@ function formatDuration(start: string, end?: string): string {
 
 const PERIODS: DashboardPeriod[] = ["24h", "7d", "30d"];
 
+function FreshnessDot({
+  fresh,
+  label,
+  updatedAt,
+  styles,
+}: {
+  fresh: boolean;
+  label: string;
+  updatedAt: number | null;
+  styles: Record<string, string>;
+}) {
+  const [open, setOpen] = useState(false);
+  const time = updatedAt ? new Date(updatedAt).toLocaleTimeString() : "—";
+  return (
+    <div className={styles.freshnessWrap}>
+      <button
+        className={`${styles.freshnessDot} ${fresh ? styles.fresh : styles.stale}`}
+        onClick={() => setOpen((v) => !v)}
+        onBlur={() => setOpen(false)}
+        aria-label="данных"
+      />
+      {open && (
+        <div className={styles.freshnessPopover}>
+          <span className={`${styles.freshnessPopDot} ${fresh ? styles.fresh : styles.stale}`} />
+          <span className={styles.freshnessPopLabel}>{label}</span>
+          <span className={styles.freshnessPopTime}>{time}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+type HealthFilter = "all" | "healthy" | "slow" | "down" | "paused";
+
 export function Dashboard() {
   const t = useT();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const endpoints = useAppStore((s) => s.endpoints);
   const setEndpoints = useAppStore((s) => s.setEndpoints);
+
   const [period, setPeriod] = useState<DashboardPeriod>("24h");
   const [autoRefreshSec, setAutoRefreshSec] = useState<0 | 5 | 10>(0);
+  const [healthFilter, setHealthFilter] = useState<HealthFilter>("all");
+  const [nowTs, setNowTs] = useState(Date.now());
 
   const {
     data: overview,
@@ -43,6 +82,7 @@ export function Dashboard() {
     isFetching,
     isLoading: overviewLoading,
     error: overviewError,
+    dataUpdatedAt: overviewUpdatedAt,
   } = useQuery({
     queryKey: ["overview", period],
     queryFn: () => metricsApi.overview(period),
@@ -52,6 +92,7 @@ export function Dashboard() {
     data: latencyData = [],
     error: latencyError,
     refetch: refetchLatency,
+    dataUpdatedAt: latencyUpdatedAt,
   } = useQuery({
     queryKey: ["dashboard-latency", period],
     queryFn: () => metricsApi.dashboardLatency(period),
@@ -61,22 +102,35 @@ export function Dashboard() {
     data: uptimeData = [],
     error: uptimeError,
     refetch: refetchUptime,
+    dataUpdatedAt: uptimeUpdatedAt,
   } = useQuery({
     queryKey: ["dashboard-uptime", period],
     queryFn: () => metricsApi.dashboardUptime(period),
   });
 
-  const { data: worstData = [], refetch: refetchWorst } = useQuery({
+  const {
+    data: worstData = [],
+    refetch: refetchWorst,
+    dataUpdatedAt: worstUpdatedAt,
+  } = useQuery({
     queryKey: ["dashboard-worst", period],
     queryFn: () => metricsApi.worst(period),
   });
 
-  const { data: incidentsData = [], refetch: refetchIncidents } = useQuery({
+  const {
+    data: incidentsData = [],
+    refetch: refetchIncidents,
+    dataUpdatedAt: incidentsUpdatedAt,
+  } = useQuery({
     queryKey: ["dashboard-incidents"],
     queryFn: () => metricsApi.incidents(),
   });
 
-  const { error: endpointsError, refetch: refetchEndpoints } = useQuery({
+  const {
+    error: endpointsError,
+    refetch: refetchEndpoints,
+    dataUpdatedAt: endpointsUpdatedAt,
+  } = useQuery({
     queryKey: ["endpoints"],
     queryFn: async () => {
       const data = await endpointsApi.list();
@@ -104,20 +158,11 @@ export function Dashboard() {
   const handleToggle = (id: string) => toggleMutation.mutate(id);
   const handleDelete = (id: string) => {
     const ep = endpoints.find((e) => e.id === id);
-    if (!confirm(t("common.confirmDelete", { name: ep?.name ?? "endpoint" })))
+    if (!confirm(t("common.confirmDelete", { name: ep?.name ?? "endpoint" }))) {
       return;
+    }
     deleteMutation.mutate(id);
   };
-
-  const firstError =
-    overviewError || endpointsError || latencyError || uptimeError;
-  const onlineCount = endpoints.filter((e) => e.status === "up").length;
-  const downCount = endpoints.filter((e) => e.status === "down").length;
-
-  const latencySparkline =
-    latencyData.length > 1 ? latencyData.map((p) => p.latency) : undefined;
-  const uptimeSparkline =
-    uptimeData.length > 1 ? uptimeData.map((p) => p.uptime) : undefined;
 
   const refreshAll = () => {
     refetchOverview();
@@ -131,12 +176,7 @@ export function Dashboard() {
   useEffect(() => {
     if (autoRefreshSec === 0) return;
     const timer = window.setInterval(() => {
-      refetchOverview();
-      refetchEndpoints();
-      refetchLatency();
-      refetchUptime();
-      refetchWorst();
-      refetchIncidents();
+      refreshAll();
     }, autoRefreshSec * 1000);
     return () => window.clearInterval(timer);
   }, [
@@ -150,6 +190,129 @@ export function Dashboard() {
     refetchIncidents,
   ]);
 
+  useEffect(() => {
+    const timer = window.setInterval(() => setNowTs(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const firstError =
+    overviewError || endpointsError || latencyError || uptimeError;
+
+  const healthyCount = endpoints.filter(
+    (e) => e.enabled && e.status === "up",
+  ).length;
+  const slowCount = endpoints.filter(
+    (e) => e.enabled && e.status === "slow",
+  ).length;
+  const downCount = endpoints.filter(
+    (e) => e.enabled && e.status === "down",
+  ).length;
+  const pausedCount = endpoints.filter((e) => !e.enabled).length;
+
+  const latestUpdatedAt = Math.max(
+    overviewUpdatedAt || 0,
+    endpointsUpdatedAt || 0,
+    latencyUpdatedAt || 0,
+    uptimeUpdatedAt || 0,
+    worstUpdatedAt || 0,
+    incidentsUpdatedAt || 0,
+  );
+
+  const freshness = useMemo(() => {
+    if (!latestUpdatedAt) {
+      return { label: t("dashboard.freshUnknown"), fresh: false };
+    }
+    const ageSec = Math.floor((nowTs - latestUpdatedAt) / 1000);
+    const threshold = autoRefreshSec > 0 ? autoRefreshSec * 2 + 1 : 30;
+    if (ageSec <= threshold) {
+      return { label: t("dashboard.fresh"), fresh: true };
+    }
+    return { label: t("dashboard.stale"), fresh: false };
+  }, [latestUpdatedAt, nowTs, autoRefreshSec, t]);
+
+  const periodMs =
+    period === "24h"
+      ? 24 * 60 * 60 * 1000
+      : period === "7d"
+        ? 7 * 24 * 60 * 60 * 1000
+        : 30 * 24 * 60 * 60 * 1000;
+  const sinceTs = Date.now() - periodMs;
+  const prevSinceTs = sinceTs - periodMs;
+
+  const newIncidentsCount = incidentsData.filter(
+    (inc) => new Date(inc.created_at).getTime() >= sinceTs,
+  ).length;
+  const prevNewIncidentsCount = incidentsData.filter((inc) => {
+    const ts = new Date(inc.created_at).getTime();
+    return ts >= prevSinceTs && ts < sinceTs;
+  }).length;
+
+  const resolvedIncidentsCount = incidentsData.filter(
+    (inc) => inc.resolved_at && new Date(inc.resolved_at).getTime() >= sinceTs,
+  ).length;
+  const prevResolvedIncidentsCount = incidentsData.filter((inc) => {
+    if (!inc.resolved_at) return false;
+    const ts = new Date(inc.resolved_at).getTime();
+    return ts >= prevSinceTs && ts < sinceTs;
+  }).length;
+
+  const worstEndpoint =
+    worstData.length > 0
+      ? [...worstData].sort((a, b) => a.uptime - b.uptime)[0]
+      : null;
+  const prevWorstUptime =
+    worstData.length > 1
+      ? [...worstData].sort((a, b) => b.uptime - a.uptime)[0]?.uptime
+      : undefined;
+
+  const filteredEndpoints = endpoints.filter((ep) => {
+    if (healthFilter === "all") return true;
+    if (healthFilter === "paused") return !ep.enabled;
+    if (healthFilter === "healthy") return ep.enabled && ep.status === "up";
+    return ep.enabled && ep.status === healthFilter;
+  });
+  const regressions = endpoints
+    .map((ep) => {
+      const worst = worstData.find((w) => w.id === ep.id);
+      const uptimePenalty = Math.max(0, 100 - (worst?.uptime ?? ep.uptime_24h));
+      const latencyPenalty = ep.latency_threshold
+        ? Math.max(
+            0,
+            (ep.avg_latency - ep.latency_threshold) / ep.latency_threshold,
+          ) * 100
+        : ep.avg_latency > 800
+          ? (ep.avg_latency - 800) / 8
+          : 0;
+      const statusPenalty = !ep.enabled
+        ? 0
+        : ep.status === "down"
+          ? 120
+          : ep.status === "slow"
+            ? 60
+            : 0;
+      const score = Math.round(uptimePenalty + latencyPenalty + statusPenalty);
+      return { ...ep, score };
+    })
+    .filter((ep) => ep.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5);
+
+  const latencySparkline =
+    latencyData.length > 1 ? latencyData.map((p) => p.latency) : undefined;
+  const uptimeSparkline =
+    uptimeData.length > 1 ? uptimeData.map((p) => p.uptime) : undefined;
+  const sortedLatencies = [...latencyData]
+    .map((p) => p.latency)
+    .sort((a, b) => a - b);
+  const p50Latency =
+    sortedLatencies.length > 0
+      ? sortedLatencies[Math.floor(sortedLatencies.length * 0.5)]
+      : undefined;
+  const p95Latency =
+    sortedLatencies.length > 0
+      ? sortedLatencies[Math.floor(sortedLatencies.length * 0.95)]
+      : undefined;
+
   const uptimeColor = (v?: number) => {
     if (!v) return "default" as const;
     return v < 95
@@ -158,6 +321,7 @@ export function Dashboard() {
         ? ("green" as const)
         : ("default" as const);
   };
+
   const latencyColor = (v?: number) => {
     if (!v) return "default" as const;
     return v > 1000
@@ -169,11 +333,17 @@ export function Dashboard() {
 
   return (
     <div className={styles.page}>
-      {/* Topbar */}
       <div className={styles.topbar}>
-        <h1 className={styles.pageTitle}>{t("dashboard.title")}</h1>
+        <div className={styles.titleWrap}>
+          <h1 className={styles.pageTitle}>{t("dashboard.title")}</h1>
+          <FreshnessDot
+            fresh={freshness.fresh}
+            label={freshness.label}
+            updatedAt={latestUpdatedAt}
+            styles={styles}
+          />
+        </div>
         <div className={styles.topbarRight}>
-          {/* Period selector */}
           <div className={styles.periodGroup}>
             {PERIODS.map((p) => (
               <button
@@ -183,18 +353,6 @@ export function Dashboard() {
               >
                 {t(`dashboard.period.${p}`)}
               </button>
-            ))}
-          </div>
-
-          {/* Status dots */}
-          <div
-            className={styles.statusDots}
-            title={`${onlineCount}/${endpoints.length} ${t("dashboard.online")}`}
-          >
-            {endpoints.map((ep) => (
-              <span key={ep.id} className={styles.dotWrap} title={ep.name}>
-                <StatusDot status={ep.enabled ? ep.status : "slow"} size={7} />
-              </span>
             ))}
           </div>
 
@@ -215,15 +373,16 @@ export function Dashboard() {
             onClick={refreshAll}
             disabled={isFetching}
           >
-            {isFetching ? <span className="spinner" /> : "↻"}{" "}
-            {t("dashboard.refresh")}
+            {isFetching ? <span className="spinner" /> : <HugeiconsIcon icon={Refresh01Icon} size={14} strokeWidth={2} />}
+            {" "}{t("dashboard.refresh")}
           </button>
           <RoleGuard role="admin">
             <button
               className="btn btn-primary btn-sm"
               onClick={() => navigate("/endpoints/new")}
             >
-              {t("dashboard.addEndpoint")}
+              <HugeiconsIcon icon={Add01Icon} size={14} strokeWidth={2} />
+              {" "}{t("dashboard.addEndpoint")}
             </button>
           </RoleGuard>
         </div>
@@ -236,10 +395,35 @@ export function Dashboard() {
         />
       )}
 
-      {/* Metric cards */}
+      <div className={styles.healthStrip}>
+        {[
+          {
+            key: "healthy",
+            label: t("dashboard.healthy"),
+            value: healthyCount,
+          },
+          { key: "slow", label: t("dashboard.slow"), value: slowCount },
+          { key: "down", label: t("dashboard.down"), value: downCount },
+          { key: "paused", label: t("dashboard.paused"), value: pausedCount },
+        ].map((it) => (
+          <button
+            key={it.key}
+            className={`${styles.healthChip} ${healthFilter === it.key ? styles.healthChipActive : ""}`}
+            onClick={() =>
+              setHealthFilter((prev) =>
+                prev === it.key ? "all" : (it.key as HealthFilter),
+              )
+            }
+          >
+            <span>{it.label}</span>
+            <strong>{it.value}</strong>
+          </button>
+        ))}
+      </div>
+
       <div className={styles.cards}>
         {overviewLoading ? (
-          Array.from({ length: 4 }).map((_, i) => (
+          Array.from({ length: 7 }).map((_, i) => (
             <div
               key={i}
               className="card skeleton-card skeleton"
@@ -272,11 +456,39 @@ export function Dashboard() {
               value={overview?.active_alerts ?? "—"}
               color={overview && overview.active_alerts > 0 ? "red" : "default"}
             />
+            <MetricCard
+              label={t("dashboard.newIncidents")}
+              value={newIncidentsCount}
+              trend={newIncidentsCount - prevNewIncidentsCount}
+              color={newIncidentsCount > 0 ? "yellow" : "default"}
+            />
+            <MetricCard
+              label={t("dashboard.resolvedIncidents")}
+              value={resolvedIncidentsCount}
+              trend={resolvedIncidentsCount - prevResolvedIncidentsCount}
+              color={resolvedIncidentsCount > 0 ? "green" : "default"}
+            />
+            <MetricCard
+              label={t("dashboard.worstEndpoint")}
+              value={
+                worstEndpoint
+                  ? `${worstEndpoint.name} (${worstEndpoint.uptime.toFixed(1)}%)`
+                  : "—"
+              }
+              trend={
+                worstEndpoint && prevWorstUptime !== undefined
+                  ? Math.round(worstEndpoint.uptime - prevWorstUptime)
+                  : undefined
+              }
+              color={
+                worstEndpoint && worstEndpoint.uptime < 95 ? "red" : "default"
+              }
+            />
           </>
         )}
       </div>
 
-      {/* Charts side by side */}
+      <h2 className={styles.blockTitle}>{t("dashboard.trends")}</h2>
       <div className={styles.charts}>
         <div className="card">
           <div className={styles.chartHeader}>
@@ -292,7 +504,11 @@ export function Dashboard() {
                       latencyData.length,
                   )}
                   ms
-                </strong>
+                </strong>{" "}
+                · {t("dashboard.p50")}{" "}
+                <strong>{Math.round(p50Latency ?? 0)}ms</strong> ·{" "}
+                {t("dashboard.p95")}{" "}
+                <strong>{Math.round(p95Latency ?? 0)}ms</strong>
               </span>
             )}
           </div>
@@ -309,6 +525,7 @@ export function Dashboard() {
             )}
           </div>
         </div>
+
         <div className="card">
           <div className={styles.chartHeader}>
             <span className={styles.sectionTitle}>
@@ -323,7 +540,8 @@ export function Dashboard() {
                     uptimeData.length
                   ).toFixed(1)}
                   %
-                </strong>
+                </strong>{" "}
+                · SLA <strong>99%</strong>
               </span>
             )}
           </div>
@@ -342,9 +560,8 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Worst endpoints + Recent incidents — side by side */}
+      <h2 className={styles.blockTitle}>{t("dashboard.priorities")}</h2>
       <div className={styles.charts}>
-        {/* Worst performers */}
         <div className="card">
           <div className={styles.chartHeader}>
             <span className={styles.sectionTitle}>{t("dashboard.worst")}</span>
@@ -385,7 +602,6 @@ export function Dashboard() {
           </div>
         </div>
 
-        {/* Recent incidents */}
         <div className="card">
           <div className={styles.chartHeader}>
             <span className={styles.sectionTitle}>
@@ -402,40 +618,63 @@ export function Dashboard() {
           </div>
           <div className={styles.incidentList}>
             {incidentsData.length > 0 ? (
-              incidentsData.slice(0, 5).map((inc) => (
-                <div key={inc.id} className={styles.incidentItem}>
-                  <StatusDot
-                    status={
-                      inc.type === "down"
-                        ? "down"
-                        : inc.type === "slow"
-                          ? "slow"
-                          : "down"
-                    }
-                    size={7}
-                  />
-                  <span className={styles.incidentName}>
-                    {inc.endpoint_name}
-                  </span>
-                  <span
-                    className={`badge badge-${inc.type === "down" ? "down" : "slow"}`}
-                    style={{ fontSize: 10 }}
-                  >
-                    {inc.type.toUpperCase()}
-                  </span>
-                  <span className={styles.incidentDuration}>
-                    {formatDuration(
-                      inc.created_at,
-                      inc.resolved_at ?? undefined,
-                    )}
-                  </span>
-                  <span className={styles.incidentTime}>
-                    {inc.status === "active"
-                      ? t("dashboard.ongoing")
-                      : new Date(inc.created_at).toLocaleDateString()}
-                  </span>
-                </div>
-              ))
+              incidentsData
+                .slice()
+                .sort((a, b) => {
+                  if (a.status === "active" && b.status !== "active") return -1;
+                  if (a.status !== "active" && b.status === "active") return 1;
+                  if (a.type === "down" && b.type !== "down") return -1;
+                  if (a.type !== "down" && b.type === "down") return 1;
+                  return (
+                    new Date(b.created_at).getTime() -
+                    new Date(a.created_at).getTime()
+                  );
+                })
+                .slice(0, 5)
+                .map((inc) => (
+                  <div key={inc.id} className={styles.incidentItem}>
+                    <StatusDot
+                      status={
+                        inc.type === "down"
+                          ? "down"
+                          : inc.type === "slow"
+                            ? "slow"
+                            : "down"
+                      }
+                      size={7}
+                    />
+                    <span className={styles.incidentName}>
+                      {inc.endpoint_name}
+                    </span>
+                    <span
+                      className={`badge badge-${inc.type === "down" ? "down" : "slow"}`}
+                      style={{ fontSize: 10 }}
+                    >
+                      {inc.type.toUpperCase()}
+                    </span>
+                    <span className={styles.incidentDuration}>
+                      {formatDuration(
+                        inc.created_at,
+                        inc.resolved_at ?? undefined,
+                      )}
+                    </span>
+                    <span className={styles.incidentTime}>
+                      {inc.status === "active"
+                        ? t("dashboard.ongoing")
+                        : new Date(inc.created_at).toLocaleDateString()}
+                    </span>
+                    <div className={styles.incidentActions}>
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() =>
+                          navigate(`/endpoints/${inc.endpoint_id}`)
+                        }
+                      >
+                        {t("dashboard.openEndpoint")}
+                      </button>
+                    </div>
+                  </div>
+                ))
             ) : (
               <div className={styles.worstEmpty}>
                 {t("dashboard.noIncidents")}
@@ -445,14 +684,64 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Endpoints table */}
+      <h2 className={styles.blockTitle}>{t("dashboard.regressions")}</h2>
+      <div className={`card ${styles.regressionCard}`}>
+        {regressions.length === 0 ? (
+          <div className={styles.worstEmpty}>
+            {t("dashboard.noRegressions")}
+          </div>
+        ) : (
+          regressions.map((ep) => (
+            <div
+              key={ep.id}
+              className={styles.regressionItem}
+              onClick={() => navigate(`/endpoints/${ep.id}`)}
+            >
+              <StatusDot status={ep.enabled ? ep.status : "slow"} size={7} />
+              <span className={styles.regressionName}>{ep.name}</span>
+              <span className={styles.regressionMeta}>
+                {ep.avg_latency}ms · {ep.uptime_24h.toFixed(1)}%
+              </span>
+              <span className={styles.regressionScore}>RISK {ep.score}</span>
+            </div>
+          ))
+        )}
+      </div>
+
+      <h2 className={styles.blockTitle}>{t("dashboard.actions")}</h2>
+      <div className={`card ${styles.actionsPanel}`}>
+        <button
+          className="btn btn-ghost btn-sm"
+          onClick={refreshAll}
+          disabled={isFetching}
+        >
+          {isFetching ? <span className="spinner" /> : "↻"}{" "}
+          {t("dashboard.refresh")}
+        </button>
+        <button
+          className="btn btn-ghost btn-sm"
+          onClick={() => navigate("/alerts")}
+        >
+          {t("dashboard.allIncidents")}
+        </button>
+        <RoleGuard role="admin">
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={() => navigate("/endpoints/new")}
+          >
+            {t("dashboard.addEndpoint")}
+          </button>
+        </RoleGuard>
+      </div>
+
+      <h2 className={styles.blockTitle}>{t("dashboard.table")}</h2>
       <div className={`card ${styles.tableCard}`}>
         <div className={styles.tableHeader}>
           <span className={styles.sectionTitle}>
             {t("dashboard.endpoints")}
           </span>
           <span className={styles.tableCount}>
-            {endpoints.length} {t("dashboard.total")}
+            {filteredEndpoints.length} {t("dashboard.total")}
           </span>
         </div>
         <div className={styles.tableWrap}>
@@ -470,7 +759,7 @@ export function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {endpoints.map((ep, i) => (
+              {filteredEndpoints.map((ep, i) => (
                 <EndpointRow
                   key={ep.id}
                   endpoint={ep}
@@ -479,7 +768,7 @@ export function Dashboard() {
                   onDelete={handleDelete}
                 />
               ))}
-              {endpoints.length === 0 && (
+              {filteredEndpoints.length === 0 && (
                 <tr>
                   <td colSpan={8} className={styles.emptyRow}>
                     <div className={styles.emptyState}>

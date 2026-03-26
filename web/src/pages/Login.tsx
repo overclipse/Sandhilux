@@ -24,6 +24,12 @@ export function Login() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // In mock/dev mode skip server probe entirely
+    if (import.meta.env.VITE_USE_MOCK === 'true') {
+      setMode("login");
+      return;
+    }
+
     let cancelled = false;
     setMode(null);
     setConnectFailed(false);

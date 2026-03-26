@@ -4,12 +4,18 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"overclipse/Sandhilux/internal/handler"
 	"overclipse/Sandhilux/internal/router"
 	"overclipse/Sandhilux/internal/service/checker"
 )
+
+func TestMain(m *testing.M) {
+	os.Setenv("JWT_SECRET", "test-secret-for-unit-tests")
+	os.Exit(m.Run())
+}
 
 // newTestServer creates a fully wired router with nil DB connections.
 func newTestServer() http.Handler {

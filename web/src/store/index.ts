@@ -68,6 +68,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({ accessToken: null, refreshToken: null, user: null });
   },
   initAuth: async () => {
+    // In mock mode — auto-login as admin, skip server call
+    if (import.meta.env.VITE_USE_MOCK === 'true') {
+      const mockUser: User = { id: 'mock-1', name: 'Demo User', email: 'demo', role: 'admin', avatar_url: '', created_at: '' };
+      set({ user: mockUser, accessToken: 'mock', authLoading: false });
+      return;
+    }
+
     const token = get().accessToken;
     if (!token) {
       set({ authLoading: false });

@@ -202,11 +202,23 @@ func (c *Checker) triggerAlerts(ctx context.Context, ep Endpoint, result Result,
 	var failCount int
 	if result.IsUp {
 		c.failCounts.LoadAndDelete(ep.ID)
+		if c.pg != nil {
+			// Auto-resolve "down" alerts when service recovers.
+			c.resolveAlerts(ctx, ep, "down")
+		}
 	} else {
 		prev, _ := c.failCounts.LoadOrStore(ep.ID, 0)
 		failCount = prev.(int) + 1
 		c.failCounts.Store(ep.ID, failCount)
 	}
+
+	if c.pg == nil {
+		return
+	}
+
+	// Auto-resolve "slow" alert if latency is back to normal.
+	// We check per-rule thresholds: if ALL latency rules pass, resolve.
+	c.autoResolveLatency(ctx, ep, latencyMs)
 
 	// Fetch alert rules for this endpoint.
 	rows, err := c.pg.Query(ctx, `
@@ -297,6 +309,35 @@ func (c *Checker) createAlertIfNone(
 
 	log.Printf("checker: alert [%s] created for %s: %s", alertType, ep.Name, message)
 	c.sendAlertWebhook(ep, alertType, message)
+}
+
+// resolveAlerts closes all active alerts of a given type for the endpoint.
+func (c *Checker) resolveAlerts(ctx context.Context, ep Endpoint, alertType string) {
+	res, err := c.pg.Exec(ctx, `
+		UPDATE alerts SET status = 'resolved', resolved_at = NOW()
+		WHERE endpoint_id = $1 AND type = $2 AND status = 'active'
+	`, ep.ID, alertType)
+	if err != nil {
+		log.Printf("checker: auto-resolve %s alerts for %s: %v", alertType, ep.Name, err)
+		return
+	}
+	if res.RowsAffected() > 0 {
+		log.Printf("checker: auto-resolved %d %s alert(s) for %s", res.RowsAffected(), alertType, ep.Name)
+	}
+}
+
+// autoResolveLatency resolves "slow" alerts if current latency is within all thresholds.
+func (c *Checker) autoResolveLatency(ctx context.Context, ep Endpoint, latencyMs int) {
+	// Check if any latency_gt rule is still violated.
+	var exceeded int
+	err := c.pg.QueryRow(ctx, `
+		SELECT COUNT(*) FROM alert_rules
+		WHERE endpoint_id = $1 AND type = 'latency_gt' AND threshold < $2
+	`, ep.ID, latencyMs).Scan(&exceeded)
+	if err != nil || exceeded > 0 {
+		return // still slow or error — don't resolve
+	}
+	c.resolveAlerts(ctx, ep, "slow")
 }
 
 func (c *Checker) sendAlertWebhook(ep Endpoint, alertType, message string) {
