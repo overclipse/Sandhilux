@@ -1,624 +1,419 @@
 .page {
-    padding: 28px 32px;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-    max-width: 1440px;
-    animation: fade-in 0.5s ease;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 1440px;
+  animation: fade-in 0.5s ease;
 }
 
+/* ── Topbar ────────────────────────────────────────── */
 .topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-}
-
-.pageTitle {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--text-1);
-    letter-spacing: -0.03em;
-}
-
-.topbarRight {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.blockTitle {
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .titleWrap {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.summaryHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
+.pageTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -0.03em;
 }
 
-.freshnessWrap {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
+.topbarRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-.freshnessDot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    opacity: 0.55;
-    transition: opacity 0.15s, transform 0.15s;
-    flex-shrink: 0;
-}
-
-.freshnessDot:hover {
-    opacity: 1;
-    transform: scale(1.3);
-}
-
-.fresh {
-    background: var(--green);
-}
-
-.stale {
-    background: var(--yellow);
-}
-
-.freshnessPopover {
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--bg-surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-    z-index: 100;
-    pointer-events: none;
-    animation: fade-in 0.1s ease;
-}
-
-.freshnessPopDot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
-
-.freshnessPopLabel {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-1);
-}
-
-.freshnessPopTime {
-    font-size: 11px;
-    color: var(--text-3);
-    font-variant-numeric: tabular-nums;
-}
-
-.healthStrip {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 10px;
-}
-
-.healthChip {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--bg-surface);
-    color: var(--text-2);
-    padding: 10px 12px;
-    font-size: 12px;
-    font-weight: 600;
-    transition: all 0.15s;
-}
-
-.healthChip strong {
-    color: var(--text-1);
-    font-variant-numeric: tabular-nums;
-}
-
-.healthChip:hover {
-    border-color: var(--border-light);
-    background: var(--bg-subtle-hover);
-}
-
-.healthChipActive {
-    border-color: var(--blue);
-    background: var(--blue-dim);
-}
-
-.autoRefreshGroup {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    padding: 2px;
-    border: 1px solid var(--border);
-    border-radius: 9999px;
-    background: var(--bg-input);
-}
-
-.autoBtn {
-    border: none;
-    border-radius: 9999px;
-    background: transparent;
-    color: var(--text-3);
-    padding: 4px 12px;
-    font-size: 11px;
-    font-weight: 600;
-    transition: all 0.15s;
-}
-
-.autoBtn:hover {
-    color: var(--text-2);
-    background: var(--bg-subtle-hover);
-}
-
-.autoBtnActive {
-    background: var(--bg-surface);
-    color: var(--text-1);
-    box-shadow: var(--shadow-sm);
-}
-
-.onlinePill {
-    font-size: 12px;
-    font-weight: 600;
-    padding: 5px 16px;
-    border-radius: 9999px;
-    font-variant-numeric: tabular-nums;
-    backdrop-filter: blur(8px);
-}
-
-.pillGreen {
-    background: var(--green-dim);
-    color: var(--green);
-    box-shadow: 0 0 12px rgba(34, 197, 94, 0.15);
-}
-.pillRed {
-    background: var(--red-dim);
-    color: var(--red);
-    box-shadow: 0 0 12px rgba(239, 68, 68, 0.15);
-    animation: glow-pulse 2s ease-in-out infinite;
-}
-
-.cards {
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    gap: 14px;
-}
-
-/* Первые 4 карточки — по 3 колонки из 12 (4×3=12) */
-.cards > :nth-child(-n+4) {
-    grid-column: span 3;
-}
-
-/* Последние 3 карточки — по 4 колонки из 12 (3×4=12) */
-.cards > :nth-child(n+5) {
-    grid-column: span 4;
-}
-
-/* Stagger animation */
-.cards > :nth-child(1) { animation: stagger-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 0ms; }
-.cards > :nth-child(2) { animation: stagger-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 60ms; }
-.cards > :nth-child(3) { animation: stagger-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 120ms; }
-.cards > :nth-child(4) { animation: stagger-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 180ms; }
-.cards > :nth-child(5) { animation: stagger-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 240ms; }
-.cards > :nth-child(6) { animation: stagger-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 300ms; }
-.cards > :nth-child(7) { animation: stagger-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 360ms; }
-
-.tableCard {
-    overflow: hidden;
-    position: relative;
-}
-
-.actionsPanel {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    padding: 14px 16px;
-}
-
-.tableCard::before {
-    content: "";
-    position: absolute;
-    top: -40px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60%;
-    height: 80px;
-    background: radial-gradient(
-        ellipse,
-        rgba(59, 130, 246, 0.04),
-        transparent 70%
-    );
-    pointer-events: none;
-}
-
-.tableHeader,
-.chartHeader {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.sectionTitle {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-3);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-}
-
-.tableCount {
-    font-size: 11px;
-    color: var(--text-3);
-    font-variant-numeric: tabular-nums;
-}
-
-.chartStat {
-    font-size: 11px;
-    color: var(--text-3);
-}
-
-.chartStat strong {
-    color: var(--text-2);
-    font-weight: 600;
-}
-
-.tableWrap {
-    overflow-x: auto;
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-}
-
-.table th {
-    text-align: left;
-    padding: 10px 16px;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-3);
-    background: rgba(17, 24, 39, 0.5);
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-    backdrop-filter: blur(4px);
-}
-
-.table td {
-    padding: 0 16px;
-    border-bottom: 1px solid rgba(30, 41, 59, 0.35);
-    vertical-align: middle;
-}
-
-.table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-.charts {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-}
-
-/* ── Period selector ──────────────────────────────── */
+/* ── Period selector ───────────────────────────────── */
 .periodGroup {
-    display: flex;
-    background: var(--bg-input);
-    border: 1px solid var(--border);
-    border-radius: 9999px;
-    padding: 3px;
-    gap: 2px;
+  display: flex;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  padding: 3px;
+  gap: 2px;
 }
 
 .periodBtn {
-    font-size: 12px;
-    font-weight: 600;
-    padding: 5px 14px;
-    border-radius: 9999px;
-    border: none;
-    background: none;
-    color: var(--text-3);
-    cursor: pointer;
-    transition: all 0.15s;
-    letter-spacing: 0.01em;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 14px;
+  border-radius: 9999px;
+  border: none;
+  background: none;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: all 0.15s;
 }
 
 .periodBtn:hover {
-    color: var(--text-1);
-    background: var(--bg-subtle-hover);
+  color: var(--text-1);
+  background: var(--bg-subtle-hover);
 }
 
 .periodActive {
-    background: var(--blue);
-    color: #fff;
-    box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+  background: var(--blue);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
 }
 
-/* ── Status dots ─────────────────────────────────── */
-.statusDots {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    padding: 4px 8px;
+/* ── Auto-refresh ──────────────────────────────────── */
+.autoRefreshGroup {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  background: var(--bg-input);
 }
 
-.dotWrap {
-    display: inline-flex;
-    cursor: default;
+.autoBtn {
+  border: none;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--text-3);
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all 0.15s;
 }
 
-/* ── Worst endpoints list ────────────────────────── */
-.worstList,
-.incidentList {
-    padding: 8px 0;
+.autoBtn:hover {
+  color: var(--text-2);
+  background: var(--bg-subtle-hover);
 }
 
-.worstItem {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 20px;
-    cursor: pointer;
-    transition: background 0.15s;
-    font-size: 13px;
+.autoBtnActive {
+  background: var(--bg-surface);
+  color: var(--text-1);
+  box-shadow: var(--shadow-sm);
 }
 
-.worstItem:hover {
-    background: var(--bg-subtle);
+/* ── Freshness dot ─────────────────────────────────── */
+.freshnessWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
 }
 
-.worstName {
-    flex: 1;
-    color: var(--text-1);
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.freshnessDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.15s, transform 0.15s;
+  flex-shrink: 0;
 }
 
-.worstUptime {
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
+.freshnessDot:hover {
+  opacity: 1;
+  transform: scale(1.3);
 }
 
-.worstEmpty {
-    padding: 24px 20px;
-    text-align: center;
-    color: var(--text-3);
-    font-size: 12px;
+.fresh { background: var(--green); }
+.stale { background: var(--yellow); }
+
+.freshnessPopover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  z-index: 100;
+  pointer-events: none;
+  animation: fade-in 0.1s ease;
 }
 
-/* ── Incidents feed ──────────────────────────────── */
-.incidentItem {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 20px;
-    font-size: 12px;
+.freshnessPopDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
-.incidentName {
-    flex: 1;
-    color: var(--text-1);
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.freshnessPopLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-1);
 }
 
-.incidentDuration {
-    color: var(--text-2);
-    font-variant-numeric: tabular-nums;
-    font-weight: 600;
+.freshnessPopTime {
+  font-size: 11px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
 }
 
-.incidentTime {
-    color: var(--text-3);
-    font-size: 11px;
-    white-space: nowrap;
+/* ── Section 1: Critical row ───────────────────────── */
+.criticalRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
 }
 
-.incidentActions {
-    margin-left: auto;
+.criticalCard {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-left: 3px solid transparent;
 }
 
-.regressionCard {
-    padding: 8px 0;
+.criticalCard::before {
+  display: none;
 }
 
-.regressionItem {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 16px;
-    cursor: pointer;
-    transition: background 0.15s;
+.criticalCardDanger {
+  border-left-color: var(--yellow);
 }
 
-.regressionItem:hover {
-    background: var(--bg-subtle-hover);
+.criticalCardOk {
+  border-left-color: var(--border-light);
 }
 
-.regressionName {
-    flex: 1;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-1);
+.criticalLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
 }
 
-.regressionMeta {
-    font-size: 12px;
-    color: var(--text-3);
-    font-variant-numeric: tabular-nums;
+.criticalValue {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
-.regressionScore {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    color: var(--red);
-    background: var(--red-dim);
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    border-radius: 9999px;
-    padding: 2px 8px;
+.criticalValueDanger {
+  color: var(--yellow);
 }
 
-/* Empty states */
+.criticalMeta {
+  font-size: 13px;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.criticalMetaDanger {
+  color: var(--yellow);
+}
+
+/* ── Section 2: Metrics row ────────────────────────── */
+.metricsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+/* stagger animation */
+.metricsRow > :nth-child(1) { animation: stagger-in 0.3s ease both; animation-delay: 0ms; }
+.metricsRow > :nth-child(2) { animation: stagger-in 0.3s ease both; animation-delay: 60ms; }
+.metricsRow > :nth-child(3) { animation: stagger-in 0.3s ease both; animation-delay: 120ms; }
+
+/* ── Section 3: Charts row ─────────────────────────── */
+.chartsRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.chartHeader {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.chartStat {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.chartStat strong {
+  color: var(--text-2);
+  font-weight: 600;
+}
+
 .chartEmpty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    height: 240px;
-    color: var(--text-3);
-    font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 240px;
+  color: var(--text-3);
+  font-size: 13px;
 }
 
 .chartEmptySub {
-    font-size: 11px;
-    color: var(--text-3);
-    opacity: 0.6;
+  font-size: 11px;
+  color: var(--text-3);
+  opacity: 0.6;
 }
 
-.emptyRow {
-    text-align: center;
-    padding: 48px 16px !important;
+/* ── Section heading ───────────────────────────────── */
+.sectionHeading {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  margin-bottom: -16px;
 }
 
-.emptyState {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    color: var(--text-3);
-    font-size: 13px;
+/* ── Section 4: Problem list ───────────────────────── */
+.problemList {
+  padding: 4px 0;
 }
 
-.emptyIcon {
-    font-size: 28px;
-    opacity: 0.5;
+.problemItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-size: 13px;
 }
 
-/* ── 1280px ──────────────────────────────────────────── */
+.problemItem:hover {
+  background: var(--bg-subtle);
+}
+
+.problemName {
+  flex: 1;
+  color: var(--text-1);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.problemUptime {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.problemDuration {
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+.problemOngoing {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--yellow);
+  letter-spacing: 0.04em;
+}
+
+.problemEmpty {
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+/* ── Section 5: Degradation ────────────────────────── */
+.degradationCard {
+  padding: 4px 0;
+}
+
+.degradationItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-size: 12px;
+}
+
+.degradationItem:hover {
+  background: var(--bg-subtle-hover);
+}
+
+.degradationName {
+  flex: 1;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.degradationMeta {
+  font-size: 11px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.degradationScore {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--yellow);
+  background: var(--yellow-dim);
+  border: 1px solid rgba(234, 179, 8, 0.15);
+  border-radius: 9999px;
+  padding: 2px 8px;
+}
+
+/* ── Responsive ────────────────────────────────────── */
 @media (max-width: 1280px) {
-    .page {
-        padding: 24px;
-    }
+  .page { padding: 24px; }
 }
 
-/* ── 1024px ──────────────────────────────────────────── */
 @media (max-width: 1024px) {
-    .page {
-        padding: 20px 18px;
-        gap: 18px;
-    }
-    .cards {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .cards > :nth-child(-n+4),
-    .cards > :nth-child(n+5) {
-        grid-column: span 1;
-    }
-    .healthStrip {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+  .page { padding: 20px 18px; gap: 24px; }
+  .chartsRow { grid-template-columns: 1fr; }
 }
 
-/* ── 768px ───────────────────────────────────────────── */
 @media (max-width: 768px) {
-    .page {
-        padding: 16px;
-        gap: 14px;
-    }
-    .charts {
-        grid-template-columns: 1fr;
-    }
-    .pageTitle {
-        font-size: 18px;
-    }
+  .page { padding: 16px; gap: 20px; }
+  .criticalRow { grid-template-columns: 1fr; }
+  .metricsRow { grid-template-columns: 1fr; }
+  .pageTitle { font-size: 18px; }
 }
 
-/* ── 640px ───────────────────────────────────────────── */
 @media (max-width: 640px) {
-    .page {
-        padding: 12px;
-        gap: 12px;
-    }
-    .topbar {
-        gap: 8px;
-    }
-    .topbarRight {
-        gap: 6px;
-    }
-    .cards {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-    .healthStrip {
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-    }
-    .actionsPanel {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .actionsPanel .btn {
-        width: 100%;
-    }
-    .regressionItem {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 4px;
-    }
-    .incidentActions {
-        margin-left: 0;
-    }
-    .onlinePill {
-        padding: 4px 10px;
-        font-size: 11px;
-    }
-}
-
-/* ── 400px ───────────────────────────────────────────── */
-@media (max-width: 400px) {
-    .cards {
-        grid-template-columns: 1fr;
-    }
+  .page { padding: 12px; gap: 16px; }
+  .topbar { gap: 8px; }
+  .topbarRight { gap: 6px; }
 }

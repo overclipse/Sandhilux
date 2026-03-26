@@ -98,11 +98,11 @@ body::after {
   content: '';
   position: fixed;
   inset: 0;
-  background: url('/back.svg') center center / 180vmax no-repeat;
-  opacity: 0.009;
+  background: url('/logo-bg.svg') center center / 55vmin no-repeat;
+  opacity: 0.12;
   mix-blend-mode: screen;
   pointer-events: none;
-  z-index: 10;
+  z-index: 0;
 }
 
 #root { position: relative; z-index: 1; }

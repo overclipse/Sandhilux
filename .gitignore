@@ -22,6 +22,7 @@ web/dist/
 
 # Local dev / mock (not for production)
 web/test/
+.vite/deps
 
 # IDE
 .idea/

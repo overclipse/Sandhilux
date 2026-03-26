@@ -1,40 +1,14 @@
 .card {
-  padding: 24px 26px 20px;
+  padding: 20px 24px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
   position: relative;
-  overflow: hidden;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg), var(--shadow-glow-blue);
-}
-
-/* default top gradient accent line */
+/* no hover lift, no top gradient */
 .card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--blue), var(--purple), var(--cyan));
-  opacity: 0.6;
-}
-
-/* status-colored border-top (overrides ::before) */
-.statusBorder {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--accent-color);
-  box-shadow: 0 0 12px var(--accent-color);
-  z-index: 1;
+  display: none;
 }
 
 .label {
@@ -46,43 +20,25 @@
 }
 
 .value {
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 700;
   color: var(--text-1);
-  line-height: 1;
+  line-height: 1.1;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
 
-.value.green  { color: var(--green); text-shadow: 0 0 20px rgba(34, 197, 94, 0.2); }
-.value.red    { color: var(--red); text-shadow: 0 0 20px rgba(239, 68, 68, 0.2); }
-.value.yellow { color: var(--yellow); text-shadow: 0 0 20px rgba(234, 179, 8, 0.2); }
-
 .trend {
-  position: absolute;
-  top: 24px;
-  right: 24px;
-  font-size: 18px;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--text-3);
-  opacity: 0.5;
-  transition: opacity 0.15s;
+  margin-top: 2px;
 }
 
 .trendUp {
   color: var(--green);
-  opacity: 1;
-  text-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
-  animation: float 3s ease-in-out infinite;
 }
 
 .trendDown {
-  color: var(--red);
-  opacity: 1;
-  text-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
-}
-
-.sparkline {
-  width: 100%;
-  height: 28px;
-  margin-top: auto;
+  color: var(--yellow);
 }

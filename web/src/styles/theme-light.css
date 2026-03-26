@@ -52,20 +52,19 @@
     --shadow-glow-red: 0 0 24px rgba(220, 38, 38, 0.1);
 }
 
-/* SVG background */
+/* Light theme background with logo watermark */
 [data-theme="light"] body {
     background-color: #f0f4ff;
-    background-image: url('/back.svg');
-    background-size: cover;
-    background-position: center top;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
 }
 
-/* Kill dark ambient gradients */
-[data-theme="light"] body::before,
-[data-theme="light"] body::after {
+/* Kill dark ambient gradient, keep logo watermark */
+[data-theme="light"] body::before {
     display: none;
+}
+
+[data-theme="light"] body::after {
+    opacity: 0.08;
+    mix-blend-mode: normal;
 }
 
 /* Card — glass effect */
