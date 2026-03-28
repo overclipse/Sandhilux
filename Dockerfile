@@ -7,12 +7,15 @@ COPY web/package.json web/package-lock.json ./
 RUN npm ci --silent
 
 COPY web/ ./
-RUN NODE_OPTIONS="--max-old-space-size=512" npm run build
+RUN NODE_OPTIONS="--max-old-space-size=384" npm run build
 
 # ── Stage 2: Build Go backend ──────────────────────────────────────────────────
 FROM golang:1.26.1-alpine AS backend
 
 ENV GOTOOLCHAIN=auto
+ENV GOFLAGS="-p=1"
+ENV GOGC=50
+ENV GOMEMLIMIT=512MiB
 
 WORKDIR /app
 
